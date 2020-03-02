@@ -249,7 +249,7 @@ class Nation():
 		return len(list(filter(lambda territory: territory.is_supply_center, self.territories)))
 
 	def automatic_turn(self):
-		pass # TODO - For AI players.
+		pass # TODO - For AI players. Equal chance for each individual action. Convoy only if allied land unit is adjacent. Support only if allied land unit is moving into adjacent.
 
 class Unit():
 	def __init__(self, is_navy, owner, territory):
@@ -328,7 +328,7 @@ class Unit():
 				else:
 					return movement_targets.append(self.last_territory)
 		else:
-			return self.territory.adjacent_land() + list(filter(lambda water_territory: not set(self.convoys).isdisjoint(water_territory.units), self.territory.adjacent_water()))
+			return self.territory.adjacent_land() + list(filter(lambda water_territory: not set(self.convoys).isdisjoint(water_territory.units), self.territory.adjacent_water())) # TODO - Add convoy-able land.
 
 class Command():
 	def __init__(self, help_string, action):
@@ -390,17 +390,43 @@ def new_command(query):
 		print('There is no map.')
 		return
 
-	# TODO - Automatically use current nation while in-game, restrict usage to productive cities within territory while maxunits > units. Allow navies only on coast.
-	if len(query) < 3:
-		print(commands['new'].help_string)
-	else:
-		if query[1] in game_map.territories:
-			if query[2] == 'yes':
-				pass # TODO
-			else:
-				pass # TODO
+	if in_game:
+		if len(query) < 3:
+			print(commands['new'].help_string)
+		elif len(player_nation.units) >= player_nation.maximum_units():
+			print('Already at maximum units.')
 		else:
-			print('Unknown territory \'' + query[1] + '\'.')
+			if query[1] in player_nation.territories:
+				if game_map.territories[query[1]] in player_nation.productive_territories:
+					if query[2] == 'yes':
+						if not game_map.territories[query[1]].is_landlocked():
+							Unit(True, player_nation, game_map.territories[query[1]])
+						else:
+							print('Navies must be placed on a coast.')
+					elif query[2] == 'no':
+						Unit(False, player_nation, game_map.territories[query[1]])
+					else:
+						print(commands['new'].help_string)
+				else:
+					print(game_map.territories[query[1]].name + ' is not a productive territory for your nation.')
+			else:
+				print('Unknown/uncontrolled territory \'' + query[1] + '\'.')
+	else:
+		if len(query) < 4:
+			print(commands['new'].help_string)
+		else:
+			if query[1] in game_map.territories:
+				if query[2] in game_map.nations:
+					if query[3] == 'yes':
+						Unit(True, game_map.nations[query[2]], game_map.territories[query[1]])
+					elif query[3] == 'no':
+						Unit(False, game_map.nations[query[2]], game_map.territories[query[1]])
+					else:
+						print(commands['new'].help_string)
+				else:
+					print('Unknown nation \'' + query[2] + '\'.')
+			else:
+				print('Unknown territory \'' + query[1] + '\'.')
 
 def modify_command(query):
 	if game_map == None:
@@ -440,7 +466,21 @@ def start_command(query):
 		print('There is no map.')
 		return
 
-	print('Start.') # TODO - Set parameter of nation for player controlled. Set productive cities for all nations.
+	global player_nation
+	global in_game
+	global commands
+	if len(query) < 2:
+		print(commands['start'].help_string)
+	else:
+		if query[1] in game_map.nations:
+			player_nation = game_map.nations[query[1]]
+			player_nation.player_type = 'human'
+			for nation in game_map.nations.values():
+				nation.finalize_starting_territory()
+			in_game = True
+			commands = game_commands
+		else:
+			print('Unknown nation \'' + query[1] + '\'.')
 
 def iterate_command(query):
 	if game_map == None:
@@ -454,6 +494,40 @@ def clear_command(query):
 		_ = system('cls')
 	else:
 		_ = system('clear')
+
+def convoy_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Convoy.') # TODO
+
+def support_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Support.') # TODO
+
+def end_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	global player_nation
+	global in_game
+	global commands
+	player_nation.player_type = 'ai'
+	player_nation = None
+	in_game = False
+	commands = setup_commands
+
+def resolve_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Resolve.') # TODO
 
 print('Diplomat v1.0 by Travis Martin.')
 print('Type \'help\' for a list of commands.')
@@ -475,18 +549,20 @@ setup_commands = {
 game_commands = {
 	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
 	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
-	'new': Command('NEWUNIT (Territory) (Is Navy YES/NO)\tAdds a unit to a territory.', new_command),
+	'new': Command('NEW (Territory) (Is Navy YES/NO)\t\tAdds a unit to a territory.', new_command),
+	'destroy': Command('DESTROY (Name)\t\t\t\t\tDestroys a unit.', destroy_command),
 	'move': Command('MOVE (Starting territory) (Destination)\t\tMoves a unit from one territory to another.', move_command),
-	# TODO - moveconvoy to move a unit through a convoy. Restrict unit actions from within function.
-	# TODO - convoy to set a unit as convoying. Restrict unit actions from within function.
-	# TODO - support to set a unit as supporting. Restrict unit actions from within function.
-	# TODO - endgame to re-enable disabled commands.
-	# TODO - resolveturn to resolve a turn and move to the next one.
+	'convoy': Command('CONVOY (Unit) (Target territory)\t\tSets a naval unit as convoying.', convoy_command),
+	'support': Command('SUPPORT (Unit) (Target territory)\t\tSets a unit as supporting.', support_command),
+	'end': Command('END\t\t\t\t\t\tStops playing the current game.', end_command),
+	'resolve': Command('RESOLVE\t\t\t\t\t\tResolves the current turn.', resolve_command),
 	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
 	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
 }
 commands = setup_commands
 
+in_game = False
+player_nation = None
 game_map = None
 
 command = [None]
