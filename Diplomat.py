@@ -95,6 +95,9 @@ class Map():
 			'germany': Nation('Germany')
 		}
 
+	def __str__(self):
+		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '), ', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations)))
+
 	def standard_setup(self):
 		self.territories['piedmont'].set_owner(self.nations['italy'])
 		self.territories['venice'].set_owner(self.nations['italy'])
@@ -227,7 +230,7 @@ class Nation():
 		self.productive_territories = []
 
 	def __str__(self):
-		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name, self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier(), self.units))) + '\nProductive territories: '
+		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\nProductive territories: '
 
 	def finalize_starting_territory(self):
 		self.productive_territories = list(filter(lambda territory: territory.is_supply_center, self.territories))
@@ -299,7 +302,11 @@ def view_command(query):
 		print('There is no map.')
 		return
 
-	if len(query) < 3:
+	if len(query) < 2:
+		print(commands['view'].help_string)
+	elif query[1] == 'map':
+		print(game_map)
+	elif len(query) < 3:
 		print(commands['view'].help_string)
 	elif query[1] == 'territory':
 		if query[2] in game_map.territories:
@@ -314,16 +321,11 @@ def view_command(query):
 	elif query[1] == 'unit':
 		if query[2] in game_map.territories:
 			if game_map.territories[query[2]].unit != None:
-				pass # TODO
+				print(game_map.territories[query[2]].unit)
 			else:
-				pass # TODO
+				print(game_map.territories[query[2]].name + ' doesn\'t contain a unit.')
 		else:
 			print('Unknown territory \'' + query[2] + '\'.')
-		pass
-		# TODO
-	elif query[1] == 'map':
-		pass
-		# TODO
 	else:
 		print(commands['view'].help_string)
 
