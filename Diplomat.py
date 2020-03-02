@@ -1,3 +1,4 @@
+import random
 from os import system, name
 
 class Map():
@@ -95,6 +96,8 @@ class Map():
 			'germany': Nation('Germany')
 		}
 
+		self.season = 'spring'
+
 	def __str__(self):
 		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '), ', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations)))
 
@@ -180,6 +183,9 @@ class Map():
 		Unit(True, self.nations['germany'], self.territories['kiel'])
 		self.nations['germany'].finalize_starting_territory()
 
+	def resolve_turn(self):
+		pass # TODO - Resolve convoy -> move -> support -> conflicts -> add/remove cities (Fall) -> add/remove units (Fall) -> switch season
+
 class Territory():
 	def __init__(self, name, abbreviations, is_land, is_water, is_supply_center, adjacent_territory_names):
 		self.name = name
@@ -189,7 +195,7 @@ class Territory():
 		self.is_supply_center = is_supply_center
 		self.adjacent_territory_names = adjacent_territory_names
 		self.owner = None
-		self.unit = None
+		self.units = []
 
 	def __str__(self):
 		return_string = 'Territory ' + self.name + '\nAbbreviations: ' + ''.join(list(map(lambda abbreviation: abbreviation + ', ', self.abbreviations))) + '\n'
@@ -202,12 +208,8 @@ class Territory():
 		return_string = return_string + 'Adjacent territories: ' + ''.join(list(map(lambda adjacent_territory: adjacent_territory.name + ', ', self.adjacent_territories()))) + '\n'
 		if self.owner != None:
 			return_string = return_string + 'Owner: ' + self.owner.name + '\n'
-		if self.unit != None:
-			return_string = return_string + 'Unit: '
-			if self.unit.is_navy:
-				return_string = return_string + 'Navy\n'
-			else:
-				return_string = return_string + 'Army\n'
+		if len(self.units) > 0:
+			return_string = return_string + 'Units: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\n'
 		return return_string
 
 	def set_owner(self, player):
@@ -218,6 +220,12 @@ class Territory():
 
 	def adjacent_territories(self):
 		return list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, self.adjacent_territory_names))))
+
+	def adjacent_water(self):
+		return list(filter(lambda territory: territory.is_water, self.adjacent_territories()))
+
+	def adjacent_land(self):
+		return list(filter(lambda territory: territory.is_land, self.adjacent_territories()))
 
 	def is_landlocked(self):
 		return bool(len(list(filter(lambda adjacent_territory: adjacent_territory.is_water, self.adjacent_territories()))))
@@ -230,7 +238,7 @@ class Nation():
 		self.productive_territories = []
 
 	def __str__(self):
-		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\nProductive territories: '
+		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\nProductive territories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.productive_territories)))
 
 	def finalize_starting_territory(self):
 		self.productive_territories = list(filter(lambda territory: territory.is_supply_center, self.territories))
@@ -242,7 +250,11 @@ class Unit():
 		self.owner.units.append(self)
 		self.last_territory = None
 		self.territory = territory
-		self.territory.unit = self
+		self.territory.units.append(self)
+		self.power = 1
+		self.action = 'hold'
+		self.action_target = None
+		self.convoys = []
 
 	def __str__(self):
 		if self.is_navy:
@@ -253,6 +265,9 @@ class Unit():
 		if self.last_territory:
 			return_string = return_string + 'Last territory: ' + self.last_territory.name + '\n'
 		return_string = return_string + 'Identifier: ' + self.identifier()
+		if self.action_target != None:
+			return_string = return_string + '\nCurrent action: ' + self.action + ' to\n---' + self.action_target + '\n---'
+		return_string = return_string + '\nAvailable movement targets: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.available_movement_targets())))
 		return return_string
 
 	def identifier(self):
@@ -262,19 +277,50 @@ class Unit():
 			return 'A ' + self.territory.abbreviations[0]
 
 	def move_to(self, territory):
-		self.territory.unit = None
-		self.last_territory = self.territory
-		self.territory = territory
-		self.territory.unit = self
+		self.action = 'move'
+		self.action_target = territory
+
+	def support_to(self, unit):
+		self.action = 'support'
+		self.action_target = unit
+
+	def convoy_to(self, unit):
+		self.action = 'convoy'
+		self.action_target = unit
+
+	def resolve_action(self):
+		if self.action == 'move':
+			self.last_territory = self.territory
+			self.territory.units.pop(self, None)
+			self.territory = self.action_target
+			self.territory.units.append(self)
+			if self.is_navy == False:
+				while self.territory.is_land == False:
+					self.territory.units.pop(self, None)
+					self.territory = random.choice(self.available_movement_targets())
+					self.territory.units.append(self)
+		elif self.action == 'support':
+			if self.action_target.territory in self.available_movement_targets():
+				self.action_target.power = self.action_target.power + 1
+				self.power = self.power - 1
+		elif self.action == 'convoy':
+			self.action_target.convoys.append(self)
+		self.action = 'hold'
+		self.action_target = None
+		self.convoys = []
 
 	def available_movement_targets(self):
 		if self.is_navy:
 			if self.territory.is_water:
 				return self.territory.adjacent_territories()
 			else:
-				return [None] # TODO
+				movement_targets = self.territory.adjacent_water() + list(filter(lambda land_territory: not set(land_territory.adjacent_territories()).isdisjoint(self.territory.adjacent_water()), self.territory.adjacent_land())) # TODO - Restrict coastline movement to coastline entered from.
+				if self.last_territory == None:
+					return movement_targets
+				else:
+					return movement_targets.append(self.last_territory)
 		else:
-			return list(filter(lambda territory: territory.is_land, self.territory.adjacent_territories())) # TODO: Add convoying.
+			return self.territory.adjacent_land() + list(filter(lambda water_territory: not set(self.convoys).isdisjoint(water_territory.units), self.territory.adjacent_water()))
 
 class Command():
 	def __init__(self, help_string, action):
@@ -320,8 +366,9 @@ def view_command(query):
 			print('Unknown nation \'' + query[2] + '\'.')
 	elif query[1] == 'unit':
 		if query[2] in game_map.territories:
-			if game_map.territories[query[2]].unit != None:
-				print(game_map.territories[query[2]].unit)
+			if len(game_map.territories[query[2]].units) > 0:
+				for unit in game_map.territories[query[2]].units:
+					print(unit)
 			else:
 				print(game_map.territories[query[2]].name + ' doesn\'t contain a unit.')
 		else:
@@ -334,7 +381,16 @@ def new_unit_command(query):
 		print('There is no map.')
 		return
 
-	print('New unit.') # TODO
+	if len(query) < 3:
+		print(commands['newunit'].help_string)
+	else:
+		if query[1] in game_map.territories:
+			if query[2] == 'yes':
+				pass # TODO
+			else:
+				pass # TODO
+		else:
+			print('Unknown territory \'' + query[1] + '\'.')
 
 def modify_command(query):
 	if game_map == None:
@@ -355,7 +411,7 @@ def move_command(query):
 		print('There is no map.')
 		return
 
-	print('Move.') # TODO
+	print('Move.') # TODO - Restrict unit actions from within function.
 
 def new_map_command(query):
 	global game_map
@@ -393,16 +449,23 @@ print('Type \'help\' for a list of commands.')
 
 help_string = 'Type \'help\' for a list of commands.'
 commands = {
-	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
-	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
-	'newunit': Command('NEWUNIT (Territory)\t\t\t\tAdds a unit to a territory.', new_unit_command),
+	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command), # TODO - Restrict shown commands based on startgame status. Add parameter to commands for available in startgame and available out of startgame.
+	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command), # TODO - show image representation of map on view map.
+	'newunit': Command('NEWUNIT (Territory) (Is Navy YES/NO)\t\tAdds a unit to a territory.', new_unit_command),
 	'modify': Command('MODIFY (TERRITORY/UNIT) (Name) (Parameter)\tModifies a specific parameter of a territory or unit.', modify_command),
 	'destroy': Command('DESTROY (Name)\t\t\t\t\tDestroys a unit.', destroy_command),
 	'move': Command('MOVE (Starting territory) (Destination)\t\tMoves a unit from one territory to another.', move_command),
+	# TODO - moveconvoy to move a unit through a convoy. Restrict unit actions from within function.
+	# TODO - convoy to set a unit as convoying. Restrict unit actions from within function.
+	# TODO - support to set a unit as supporting. Restrict unit actions from within function.
 	'newmap': Command('NEWMAP\t\t\t\t\t\tStarts a new game with an empty map.', new_map_command),
 	'standardsetup': Command('STANDARDSETUP\t\t\t\t\tSets up the map like a standard game of Diplomacy.', standard_setup_command),
 	'setproductive': Command('SETPRODUCTIVE [Nation]\t\t\t\tSets supply centers owned by a nation as able to produce units. Applies to all nations if used without a parameter.', set_productive_command),
-	'iterate': Command('ITERATE (Iterations)\t\t\t\tAutomatically plays several games of Diplomacy from the current map state.', iterate_command),
+	# TODO - setnation to set the player's nation for startgame. Add parameter to nation for player controlled.
+	# TODO - Replace setproductive with startgame - set all nations as productive, disable iterate, standardsetup, newmap, destroy, modify, newunit. Basically put player into game to play it. Requires setnation called first.
+	# TODO - endgame to re-enable disabled commands.
+	# TODO - resolveturn to resolve a turn and move to the next one. Only available while in startgame.
+	'iterate': Command('ITERATE (Iterations)\t\t\t\tAutomatically plays several games of Diplomacy from the current map state.', iterate_command), # TODO - Return projected rankings, best alliance for target nation, and moveset of fastest win for target nation. Add a nation optional parameter for last two outputs.
 	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
 	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
 }
