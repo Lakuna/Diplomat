@@ -1,6 +1,8 @@
+from os import system, name
+
 class Map():
 	def __init__(self):
-		self.territories = {
+		original_territories = {
 			'Ankara': Territory('Ankara', ['ANK'], True, False, True, ['Constantinople', 'Black Sea', 'Armenia', 'Smyrna']),
 			'Belgium': Territory('Belgium', ['BEL'], True, False, True, ['English Channel', 'Picardy', 'North Sea', 'Holland', 'Ruhr', 'Burgundy']),
 			'Berlin': Territory('Berlin', ['BER'], True, False, True, ['Kiel', 'Baltic Sea', 'Prussia', 'Munich', 'Silesia']),
@@ -77,101 +79,103 @@ class Map():
 			'Eastern Mediterranean': Territory('Eastern Mediterranean', ['EAS', 'EMED', 'EAST', 'Eastern', 'EastMed', 'EMS', 'EME', 'East Mediterranean'], False, True, False, ['Ionian Sea', 'Aegean Sea', 'Smyrna', 'Syria']),
 			'Black Sea': Territory('Black Sea', ['BLA', 'Black'], False, True, False, ['Bulgaria', 'Rumania', 'Sevastopol', 'Armenia', 'Ankara', 'Constantinople']),
 		}
-		for territory in self.territories:
+		self.territories = {}
+		for territory in original_territories.values():
+			self.territories[simplify_string(territory.name)] = territory
 			for abbreviation in territory.abbreviations:
-				self.territories[abbreviation] = territory
+				self.territories[simplify_string(abbreviation)] = territory
 
 		self.nations = {
-			'Italy': Nation('Italy'),
-			'Austria-Hungary': Nation('Austria-Hungary'),
-			'Russia': Nation('Russia'),
-			'Turkey': Nation('Turkey'),
-			'England': Nation('England'),
-			'France': Nation('France'),
-			'Germany': Nation('Germany')
+			'italy': Nation('Italy'),
+			'austriahungary': Nation('Austria-Hungary'),
+			'russia': Nation('Russia'),
+			'turkey': Nation('Turkey'),
+			'england': Nation('England'),
+			'france': Nation('France'),
+			'germany': Nation('Germany')
 		}
 
-	def standard_setup():
-		self.territories['Piedmont'].set_owner(self.nations['Italy'])
-		self.territories['Venice'].set_owner(self.nations['Italy'])
-		self.territories['Tuscany'].set_owner(self.nations['Italy'])
-		self.territories['Rome'].set_owner(self.nations['Italy'])
-		self.territories['Apulia'].set_owner(self.nations['Italy'])
-		self.territories['Naples'].set_owner(self.nations['Italy'])
-		self.territories['Tyrrhenian Sea'].set_owner(self.nations['Italy'])
-		Unit(False, self.nations['Italy'], self.territories['Rome'])
-		Unit(False, self.nations['Italy'], self.territories['Venice'])
-		Unit(True, self.nations['Italy'], self.territories['Naples'])
-		self.nations['Italy'].finalize_starting_territory()
+	def standard_setup(self):
+		self.territories['piedmont'].set_owner(self.nations['italy'])
+		self.territories['venice'].set_owner(self.nations['italy'])
+		self.territories['tuscany'].set_owner(self.nations['italy'])
+		self.territories['rome'].set_owner(self.nations['italy'])
+		self.territories['apulia'].set_owner(self.nations['italy'])
+		self.territories['naples'].set_owner(self.nations['italy'])
+		self.territories['tyrrheniansea'].set_owner(self.nations['italy'])
+		Unit(False, self.nations['italy'], self.territories['rome'])
+		Unit(False, self.nations['italy'], self.territories['venice'])
+		Unit(True, self.nations['italy'], self.territories['naples'])
+		self.nations['italy'].finalize_starting_territory()
 
-		self.territories['Tyrolia'].set_owner(self.nations['Austria-Hungary'])
-		self.territories['Bohemia'].set_owner(self.nations['Austria-Hungary'])
-		self.territories['Galicia'].set_owner(self.nations['Austria-Hungary'])
-		self.territories['Vienna'].set_owner(self.nations['Austria-Hungary'])
-		self.territories['Trieste'].set_owner(self.nations['Austria-Hungary'])
-		self.territories['Budapest'].set_owner(self.nations['Austria-Hungary'])
-		Unit(False, self.nations['Austria-Hungary'], self.territories['Vienna'])
-		Unit(False, self.nations['Austria-Hungary'], self.territories['Budapest'])
-		Unit(True, self.nations['Austria-Hungary'], self.territories['Trieste'])
-		self.nations['Austria-Hungary'].finalize_starting_territory()
+		self.territories['tyrolia'].set_owner(self.nations['austriahungary'])
+		self.territories['bohemia'].set_owner(self.nations['austriahungary'])
+		self.territories['galicia'].set_owner(self.nations['austriahungary'])
+		self.territories['vienna'].set_owner(self.nations['austriahungary'])
+		self.territories['trieste'].set_owner(self.nations['austriahungary'])
+		self.territories['budapest'].set_owner(self.nations['austriahungary'])
+		Unit(False, self.nations['austriahungary'], self.territories['vienna'])
+		Unit(False, self.nations['austriahungary'], self.territories['budapest'])
+		Unit(True, self.nations['austriahungary'], self.territories['trieste'])
+		self.nations['austriahungary'].finalize_starting_territory()
 
-		self.territories['Finland'].set_owner(self.nations['Russia'])
-		self.territories['Saint Petersburg'].set_owner(self.nations['Russia'])
-		self.territories['Livonia'].set_owner(self.nations['Russia'])
-		self.territories['Moscow'].set_owner(self.nations['Russia'])
-		self.territories['Warsaw'].set_owner(self.nations['Russia'])
-		self.territories['Ukraine'].set_owner(self.nations['Russia'])
-		self.territories['Sevastopol'].set_owner(self.nations['Russia'])
-		Unit(False, self.nations['Russia'], self.territories['Moscow'])
-		Unit(False, self.nations['Russia'], self.territories['Warsaw'])
-		Unit(True, self.nations['Russia'], self.territories['Saint Petersburg'])
-		Unit(True, self.nations['Russia'], self.territories['Sevastopol'])
-		self.nations['Russia'].finalize_starting_territory()
+		self.territories['finland'].set_owner(self.nations['russia'])
+		self.territories['saintpetersburg'].set_owner(self.nations['russia'])
+		self.territories['livonia'].set_owner(self.nations['russia'])
+		self.territories['moscow'].set_owner(self.nations['russia'])
+		self.territories['warsaw'].set_owner(self.nations['russia'])
+		self.territories['ukraine'].set_owner(self.nations['russia'])
+		self.territories['sevastopol'].set_owner(self.nations['russia'])
+		Unit(False, self.nations['russia'], self.territories['moscow'])
+		Unit(False, self.nations['russia'], self.territories['warsaw'])
+		Unit(True, self.nations['russia'], self.territories['saintpetersburg'])
+		Unit(True, self.nations['russia'], self.territories['sevastopol'])
+		self.nations['russia'].finalize_starting_territory()
 
-		self.territories['Constantinople'].set_owner(self.nations['Turkey'])
-		self.territories['Ankara'].set_owner(self.nations['Turkey'])
-		self.territories['Armenia'].set_owner(self.nations['Turkey'])
-		self.territories['Smyrna'].set_owner(self.nations['Turkey'])
-		self.territories['Syria'].set_owner(self.nations['Turkey'])
-		self.territories['Eastern Mediterranean'].set_owner(self.nations['Turkey'])
-		Unit(False, self.nations['Turkey'], self.territories['Constantinople'])
-		Unit(False, self.nations['Turkey'], self.territories['Smyrna'])
-		Unit(True, self.nations['Turkey'], self.territories['Ankara'])
-		self.nations['Turkey'].finalize_starting_territory()
+		self.territories['constantinople'].set_owner(self.nations['turkey'])
+		self.territories['ankara'].set_owner(self.nations['turkey'])
+		self.territories['armenia'].set_owner(self.nations['turkey'])
+		self.territories['smyrna'].set_owner(self.nations['turkey'])
+		self.territories['syria'].set_owner(self.nations['turkey'])
+		self.territories['easternmediterranean'].set_owner(self.nations['turkey'])
+		Unit(False, self.nations['turkey'], self.territories['constantinople'])
+		Unit(False, self.nations['turkey'], self.territories['smyrna'])
+		Unit(True, self.nations['turkey'], self.territories['ankara'])
+		self.nations['turkey'].finalize_starting_territory()
 
-		self.territories['Clyde'].set_owner(self.nations['England'])
-		self.territories['Edinburgh'].set_owner(self.nations['England'])
-		self.territories['Liverpool'].set_owner(self.nations['England'])
-		self.territories['Yorkshire'].set_owner(self.nations['England'])
-		self.territories['Wales'].set_owner(self.nations['England'])
-		self.territories['London'].set_owner(self.nations['England'])
-		self.territories['Irish Sea'].set_owner(self.nations['England'])
-		Unit(False, self.nations['England'], self.territories['Liverpool'])
-		Unit(True, self.nations['England'], self.territories['Edinburgh'])
-		Unit(True, self.nations['England'], self.territories['London'])
-		self.nations['England'].finalize_starting_territory()
+		self.territories['clyde'].set_owner(self.nations['england'])
+		self.territories['edinburgh'].set_owner(self.nations['england'])
+		self.territories['liverpool'].set_owner(self.nations['england'])
+		self.territories['yorkshire'].set_owner(self.nations['england'])
+		self.territories['wales'].set_owner(self.nations['england'])
+		self.territories['london'].set_owner(self.nations['england'])
+		self.territories['irishsea'].set_owner(self.nations['england'])
+		Unit(False, self.nations['england'], self.territories['liverpool'])
+		Unit(True, self.nations['england'], self.territories['edinburgh'])
+		Unit(True, self.nations['england'], self.territories['london'])
+		self.nations['england'].finalize_starting_territory()
 
-		self.territories['Gascony'].set_owner(self.nations['France'])
-		self.territories['Brest'].set_owner(self.nations['France'])
-		self.territories['Picardy'].set_owner(self.nations['France'])
-		self.territories['Paris'].set_owner(self.nations['France'])
-		self.territories['Burgundy'].set_owner(self.nations['France'])
-		self.territories['Marseilles'].set_owner(self.nations['France'])
-		Unit(False, self.nations['France'], self.territories['Paris'])
-		Unit(False, self.nations['France'], self.territories['Marseilles'])
-		Unit(True, self.nations['France'], self.territories['Brest'])
-		self.nations['France'].finalize_starting_territory()
+		self.territories['gascony'].set_owner(self.nations['france'])
+		self.territories['brest'].set_owner(self.nations['france'])
+		self.territories['picardy'].set_owner(self.nations['france'])
+		self.territories['paris'].set_owner(self.nations['france'])
+		self.territories['burgundy'].set_owner(self.nations['france'])
+		self.territories['marseilles'].set_owner(self.nations['france'])
+		Unit(False, self.nations['france'], self.territories['paris'])
+		Unit(False, self.nations['france'], self.territories['marseilles'])
+		Unit(True, self.nations['france'], self.territories['brest'])
+		self.nations['france'].finalize_starting_territory()
 
-		self.territories['Ruhr'].set_owner(self.nations['Germany'])
-		self.territories['Kiel'].set_owner(self.nations['Germany'])
-		self.territories['Berlin'].set_owner(self.nations['Germany'])
-		self.territories['Prussia'].set_owner(self.nations['Germany'])
-		self.territories['Munich'].set_owner(self.nations['Germany'])
-		self.territories['Silesia'].set_owner(self.nations['Germany'])
-		Unit(False, self.nations['Germany'], self.territories['Berlin'])
-		Unit(False, self.nations['Germany'], self.territories['Munich'])
-		Unit(True, self.nations['Germany'], self.territories['Kiel'])
-		self.nations['Germany'].finalize_starting_territory()
+		self.territories['ruhr'].set_owner(self.nations['germany'])
+		self.territories['kiel'].set_owner(self.nations['germany'])
+		self.territories['berlin'].set_owner(self.nations['germany'])
+		self.territories['prussia'].set_owner(self.nations['germany'])
+		self.territories['munich'].set_owner(self.nations['germany'])
+		self.territories['silesia'].set_owner(self.nations['germany'])
+		Unit(False, self.nations['germany'], self.territories['berlin'])
+		Unit(False, self.nations['germany'], self.territories['munich'])
+		Unit(True, self.nations['germany'], self.territories['kiel'])
+		self.nations['germany'].finalize_starting_territory()
 
 class Territory():
 	def __init__(self, name, abbreviations, is_land, is_water, is_supply_center, adjacent_territory_names):
@@ -183,13 +187,37 @@ class Territory():
 		self.adjacent_territory_names = adjacent_territory_names
 		self.owner = None
 		self.unit = None
-		self.map = game_map
 
-	def set_owner(player):
+	def __str__(self):
+		return_string = 'Territory ' + self.name + '\nAbbreviations: ' + ''.join(list(map(lambda abbreviation: abbreviation + ', ', self.abbreviations))) + '\n'
+		if self.is_land:
+			return_string = return_string + 'Land\n'
+		if self.is_water:
+			return_string = return_string + 'Water\n'
+		if self.is_supply_center:
+			return_string = return_string + 'Supply center\n'
+		return_string = return_string + 'Adjacent territories: ' + ''.join(list(map(lambda adjacent_territory: adjacent_territory.name + ', ', self.adjacent_territories()))) + '\n'
+		if self.owner != None:
+			return_string = return_string + 'Owner: ' + self.owner.name + '\n'
+		if self.unit != None:
+			return_string = return_string + 'Unit: '
+			if self.unit.is_navy:
+				return_string = return_string + 'Navy\n'
+			else:
+				return_string = return_string + 'Army\n'
+		return return_string
+
+	def set_owner(self, player):
 		if self.owner != None:
 			self.owner.territories.pop(self.name, None)
 		self.owner = player
 		self.owner.territories.append(self)
+
+	def adjacent_territories(self):
+		return list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, self.adjacent_territory_names))))
+
+	def is_landlocked(self):
+		return bool(len(list(filter(lambda adjacent_territory: adjacent_territory.is_water, self.adjacent_territories()))))
 
 class Nation():
 	def __init__(self, name):
@@ -198,7 +226,10 @@ class Nation():
 		self.units = []
 		self.productive_territories = []
 
-	def finalize_starting_territory():
+	def __str__(self):
+		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name, self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier(), self.units))) + '\nProductive territories: '
+
+	def finalize_starting_territory(self):
 		self.productive_territories = list(filter(lambda territory: territory.is_supply_center, self.territories))
 
 class Unit():
@@ -210,59 +241,168 @@ class Unit():
 		self.territory = territory
 		self.territory.unit = self
 
-	def move_to(territory):
+	def __str__(self):
+		if self.is_navy:
+			return_string = 'Navy '
+		else:
+			return_string = 'Army '
+		return_string = return_string + self.territory.name + '\nOwner: ' + self.owner.name + '\n'
+		if self.last_territory:
+			return_string = return_string + 'Last territory: ' + self.last_territory.name + '\n'
+		return_string = return_string + 'Identifier: ' + self.identifier()
+		return return_string
+
+	def identifier(self):
+		if self.is_navy:
+			return 'N ' + self.territory.abbreviations[0]
+		else:
+			return 'A ' + self.territory.abbreviations[0]
+
+	def move_to(self, territory):
 		self.territory.unit = None
 		self.last_territory = self.territory
 		self.territory = territory
 		self.territory.unit = self
 
-	def available_moves():
+	def available_movement_targets(self):
 		if self.is_navy:
 			if self.territory.is_water:
-				return adjacent_territories()
+				return self.territory.adjacent_territories()
 			else:
-				adjacent_water_territories = list(filter(lambda adjacent_water_territory: adjacent_water_territory.is_water, self.adjacent_territories()))
-				adjacent_land_territories = list(filter(lambda adjacent_land_territory: adjacent_land_territory.is_land, self.adjacent_territories()))
-				land_territories_adjacent_to_adjacent_water_territories = None
-				return []
-				# TODO
+				return [None] # TODO
 		else:
-			return list(filter(lambda territory: territory.is_land, self.adjacent_territories()))
-
-	def is_landlocked():
-		return bool(len(list(filter(lambda adjacent_water_territory: adjacent_water_territory.is_water, self.adjacent_territories()))))
-
-	def adjacent_territories():
-		return list(lambda adjacent_territory: self.territory.map.territories[adjacent_territory], self.territory.adjacent_territory_names)
+			return list(filter(lambda territory: territory.is_land, self.territory.adjacent_territories())) # TODO: Add convoying.
 
 class Command():
 	def __init__(self, help_string, action):
 		self.help_string = help_string
 		self.action = action
 
-	def action(query):
+	def action(self, query):
 		self.action(query)
-
 
 def simplify_string(string):
 	return ''.join(list([character for character in string if character.isalpha()])).lower()
+
+def help_command(query):
+	if len(query) == 1:
+		print('Key: LITERAL (Required) [Optional]\nWhen referring to the name of a unit, use the name of the territory it\'s on.\n')
+		for command in commands.values():
+			print(command.help_string)
+	elif query[1] in commands:
+		print(commands[query[1]].help_string)
+	else:
+		print('Unknown command \'' + query[1] + '\'.')
+
+def view_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	if len(query) < 3:
+		print(commands['view'].help_string)
+	elif query[1] == 'territory':
+		if query[2] in game_map.territories:
+			print(game_map.territories[query[2]])
+		else:
+			print('Unknown territory \'' + query[2] + '\'.')
+	elif query[1] == 'nation':
+		if query[2] in game_map.nations:
+			print(game_map.nations[query[2]])
+		else:
+			print('Unknown nation \'' + query[2] + '\'.')
+	elif query[1] == 'unit':
+		if query[2] in game_map.territories:
+			if game_map.territories[query[2]].unit != None:
+				pass # TODO
+			else:
+				pass # TODO
+		else:
+			print('Unknown territory \'' + query[2] + '\'.')
+		pass
+		# TODO
+	elif query[1] == 'map':
+		pass
+		# TODO
+	else:
+		print(commands['view'].help_string)
+
+def new_unit_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('New unit.') # TODO
+
+def modify_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Modify.') # TODO
+
+def destroy_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Destroy.') # TODO
+
+def move_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Move.') # TODO
+
+def new_map_command(query):
+	global game_map
+	game_map = Map()
+
+def standard_setup_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	game_map.standard_setup()
+
+def set_productive_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Set productive.') # TODO
+
+def iterate_command(query):
+	if game_map == None:
+		print('There is no map.')
+		return
+
+	print('Iterate.') # TODO
+
+def clear_command(query):
+	if name == 'nt':
+		_ = system('cls')
+	else:
+		_ = system('clear')
 
 print('Diplomat v1.0 by Travis Martin.')
 print('Type \'help\' for a list of commands.')
 
 help_string = 'Type \'help\' for a list of commands.'
 commands = {
-	'help': Command('HELP [Command name]\t\tGives information about commands.', lambda query:
-		print(query)
-		# TODO
-		),
-	'view': None, # TODO
-	'newunit': None, # TODO
-	'modify': None, # TODO
-	'move': None, # TODO
-	'newmap': None, # TODO
-	'standardsetup': None, # TODO
-	'exit': Command('EXIT\t\tExits the program.', lambda query: None)
+	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
+	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
+	'newunit': Command('NEWUNIT (Territory)\t\t\t\tAdds a unit to a territory.', new_unit_command),
+	'modify': Command('MODIFY (TERRITORY/UNIT) (Name) (Parameter)\tModifies a specific parameter of a territory or unit.', modify_command),
+	'destroy': Command('DESTROY (Name)\t\t\t\t\tDestroys a unit.', destroy_command),
+	'move': Command('MOVE (Starting territory) (Destination)\t\tMoves a unit from one territory to another.', move_command),
+	'newmap': Command('NEWMAP\t\t\t\t\t\tStarts a new game with an empty map.', new_map_command),
+	'standardsetup': Command('STANDARDSETUP\t\t\t\t\tSets up the map like a standard game of Diplomacy.', standard_setup_command),
+	'setproductive': Command('SETPRODUCTIVE [Nation]\t\t\t\tSets supply centers owned by a nation as able to produce units. Applies to all nations if used without a parameter.', set_productive_command),
+	'iterate': Command('ITERATE (Iterations)\t\t\t\tAutomatically plays several games of Diplomacy from the current map state.', iterate_command),
+	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
+	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
 }
 
 game_map = None
