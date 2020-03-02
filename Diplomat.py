@@ -1,5 +1,6 @@
 import random
 from os import system, name
+# TODO - Move classes and methods into other files as appropriate.
 
 class Map():
 	def __init__(self):
@@ -236,12 +237,19 @@ class Nation():
 		self.territories = []
 		self.units = []
 		self.productive_territories = []
+		self.player_type = 'ai'
 
 	def __str__(self):
 		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\nProductive territories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.productive_territories)))
 
 	def finalize_starting_territory(self):
 		self.productive_territories = list(filter(lambda territory: territory.is_supply_center, self.territories))
+
+	def maximum_units(self):
+		return len(list(filter(lambda territory: territory.is_supply_center, self.territories)))
+
+	def automatic_turn(self):
+		pass # TODO - For AI players.
 
 class Unit():
 	def __init__(self, is_navy, owner, territory):
@@ -352,6 +360,7 @@ def view_command(query):
 		print(commands['view'].help_string)
 	elif query[1] == 'map':
 		print(game_map)
+		# TODO - show image representation of map on view map.
 	elif len(query) < 3:
 		print(commands['view'].help_string)
 	elif query[1] == 'territory':
@@ -376,13 +385,14 @@ def view_command(query):
 	else:
 		print(commands['view'].help_string)
 
-def new_unit_command(query):
+def new_command(query):
 	if game_map == None:
 		print('There is no map.')
 		return
 
+	# TODO - Automatically use current nation while in-game, restrict usage to productive cities within territory while maxunits > units. Allow navies only on coast.
 	if len(query) < 3:
-		print(commands['newunit'].help_string)
+		print(commands['new'].help_string)
 	else:
 		if query[1] in game_map.territories:
 			if query[2] == 'yes':
@@ -397,13 +407,14 @@ def modify_command(query):
 		print('There is no map.')
 		return
 
-	print('Modify.') # TODO
+	print('Modify.') # TODO - For map, season should be modifiable.
 
 def destroy_command(query):
 	if game_map == None:
 		print('There is no map.')
 		return
 
+	# TODO - While in-game, disallow other actions while current units > max units. Disable if current units < max units. Only allow own units.
 	print('Destroy.') # TODO
 
 def move_command(query):
@@ -417,26 +428,26 @@ def new_map_command(query):
 	global game_map
 	game_map = Map()
 
-def standard_setup_command(query):
+def standardize_command(query):
 	if game_map == None:
 		print('There is no map.')
 		return
 
 	game_map.standard_setup()
 
-def set_productive_command(query):
+def start_command(query):
 	if game_map == None:
 		print('There is no map.')
 		return
 
-	print('Set productive.') # TODO
+	print('Start.') # TODO - Set parameter of nation for player controlled. Set productive cities for all nations.
 
 def iterate_command(query):
 	if game_map == None:
 		print('There is no map.')
 		return
 
-	print('Iterate.') # TODO
+	print('Iterate.') # TODO - Return projected rankings, best alliance for target nation, and moveset of fastest win for target nation.
 
 def clear_command(query):
 	if name == 'nt':
@@ -448,27 +459,33 @@ print('Diplomat v1.0 by Travis Martin.')
 print('Type \'help\' for a list of commands.')
 
 help_string = 'Type \'help\' for a list of commands.'
-commands = {
-	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command), # TODO - Restrict shown commands based on startgame status. Add parameter to commands for available in startgame and available out of startgame.
-	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command), # TODO - show image representation of map on view map.
-	'newunit': Command('NEWUNIT (Territory) (Is Navy YES/NO)\t\tAdds a unit to a territory.', new_unit_command),
-	'modify': Command('MODIFY (TERRITORY/UNIT) (Name) (Parameter)\tModifies a specific parameter of a territory or unit.', modify_command),
+setup_commands = {
+	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
+	'newmap': Command('NEWMAP\t\t\t\t\t\tStarts a new game with an empty map.', new_map_command),
+	'standardize': Command('STANDARDIZE\t\t\t\t\tSets up the map like a standard game of Diplomacy.', standardize_command),
+	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
+	'new': Command('NEW (Territory) (Nation) (Is Navy YES/NO)\tAdds a unit to a territory.', new_command),
 	'destroy': Command('DESTROY (Name)\t\t\t\t\tDestroys a unit.', destroy_command),
+	'modify': Command('MODIFY (MAP/TERRITORY/UNIT) (Name) (Parameter)\tModifies a specific parameter of a territory or unit.', modify_command),
+	'start': Command('START (Nation)\t\t\t\t\tStarts playing a game as the selected nation.', start_command),
+	'iterate': Command('ITERATE (Iterations) [Nation]\t\t\tAutomatically plays several games of Diplomacy from the current map state. Shows projections for selected nation.', iterate_command),
+	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
+	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
+}
+game_commands = {
+	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
+	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
+	'new': Command('NEWUNIT (Territory) (Is Navy YES/NO)\tAdds a unit to a territory.', new_command),
 	'move': Command('MOVE (Starting territory) (Destination)\t\tMoves a unit from one territory to another.', move_command),
 	# TODO - moveconvoy to move a unit through a convoy. Restrict unit actions from within function.
 	# TODO - convoy to set a unit as convoying. Restrict unit actions from within function.
 	# TODO - support to set a unit as supporting. Restrict unit actions from within function.
-	'newmap': Command('NEWMAP\t\t\t\t\t\tStarts a new game with an empty map.', new_map_command),
-	'standardsetup': Command('STANDARDSETUP\t\t\t\t\tSets up the map like a standard game of Diplomacy.', standard_setup_command),
-	'setproductive': Command('SETPRODUCTIVE [Nation]\t\t\t\tSets supply centers owned by a nation as able to produce units. Applies to all nations if used without a parameter.', set_productive_command),
-	# TODO - setnation to set the player's nation for startgame. Add parameter to nation for player controlled.
-	# TODO - Replace setproductive with startgame - set all nations as productive, disable iterate, standardsetup, newmap, destroy, modify, newunit. Basically put player into game to play it. Requires setnation called first.
 	# TODO - endgame to re-enable disabled commands.
-	# TODO - resolveturn to resolve a turn and move to the next one. Only available while in startgame.
-	'iterate': Command('ITERATE (Iterations)\t\t\t\tAutomatically plays several games of Diplomacy from the current map state.', iterate_command), # TODO - Return projected rankings, best alliance for target nation, and moveset of fastest win for target nation. Add a nation optional parameter for last two outputs.
+	# TODO - resolveturn to resolve a turn and move to the next one.
 	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
 	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
 }
+commands = setup_commands
 
 game_map = None
 
