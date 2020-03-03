@@ -12,8 +12,8 @@ class Map():
 			'Budapest': Territory('Budapest', ['BUD'], True, False, True, ['Trieste', 'Vienna', 'Galicia', 'Rumania', 'Serbia']),
 			'Bulgaria': Territory('Bulgaria', ['BUL'], True, False, True, ['Serbia', 'Rumania', 'Black Sea', 'Constantinople', 'Aegean Sea', 'Greece']),
 			'Constantinople': Territory('Constantinople', ['CON'], True, True, True, ['Bulgaria', 'Black Sea', 'Ankara', 'Smyrna', 'Aegean Sea']),
-			'Denmark': Territory('Denmark', ['DEN'], True, True, True, ['Heligoland Bight', 'North Sea', 'Skagerrack', 'Baltic Sea', 'Kiel']),
-			'Edinburgh': Territory('Edinburgh', ['EDI'], True, False, True, ['Clyde', 'Norwegian Sea', 'North Sea', 'Yorkshire']),
+			'Denmark': Territory('Denmark', ['DEN'], True, True, True, ['Heligoland Bight', 'North Sea', 'Skagerrack', 'Baltic Sea', 'Kiel', 'Sweden']),
+			'Edinburgh': Territory('Edinburgh', ['EDI'], True, False, True, ['Clyde', 'Norwegian Sea', 'North Sea', 'Yorkshire', 'Liverpool']),
 			'Greece': Territory('Greece', ['GRE'], True, False, True, ['Albania', 'Serbia', 'Bulgaria', 'Aegean Sea', 'Ionian Sea']),
 			'Holland': Territory('Holland', ['HOL'], True, False, True, ['North Sea', 'Heligoland Bight', 'Kiel', 'Ruhr', 'Belgium']),
 			'Kiel': Territory('Kiel', ['KIE'], True, False, True, ['Holland', 'Heligoland Bight', 'Denmark', 'Baltic Sea', 'Berlin', 'Munich', 'Ruhr']),
@@ -59,13 +59,13 @@ class Map():
 			'Livonia': Territory('Livonia', ['LVN', 'LIVO', 'LVO', 'LVA'], True, False, False, ['Gulf of Bothnia', 'Saint Petersburg', 'Moscow', 'Warsaw', 'Prussia', 'Baltic Sea']),
 			'Ukraine': Territory('Ukraine', ['UKR'], True, False, False, ['Warsaw', 'Moscow', 'Sevastopol', 'Rumania', 'Galicia']),
 			'Albania': Territory('Albania', ['ALB'], True, False, False, ['Adriatic Sea', 'Trieste', 'Serbia', 'Greece', 'Ionian Sea']),
-			'Armenia': Territory('Armenia', ['ARM'], True, False, False, ['Ankara', 'Black Sea', 'Syria', 'Smyrna']),
+			'Armenia': Territory('Armenia', ['ARM'], True, False, False, ['Ankara', 'Black Sea', 'Syria', 'Smyrna', 'Sevastopol']),
 			'Syria': Territory('Syria', ['SYR'], True, False, False, ['Eastern Mediterranean', 'Smyrna', 'Armenia']),
 			'North Atlantic Ocean': Territory('North Atlantic Ocean', ['NAO', 'North Atlantic'], False, True, False, ['Clyde', 'Liverpool', 'Irish Sea', 'Mid-Atlantic Ocean', 'Norwegian Sea']),
-			'Mid-Atlantic Ocean': Territory('Mid-Atlantic Ocean', ['MAO', 'Mid Atlantic Ocean', 'Mid Atlantic', 'MID', 'MAT'], False, True, False, ['North Atlantic Ocean', 'Irish Sea', 'English Channel', 'Brest', 'Gascony', 'Spain', 'Portugal', 'North Africa']),
+			'Mid-Atlantic Ocean': Territory('Mid-Atlantic Ocean', ['MAO', 'Mid Atlantic Ocean', 'Mid Atlantic', 'MID', 'MAT'], False, True, False, ['North Atlantic Ocean', 'Irish Sea', 'English Channel', 'Brest', 'Gascony', 'Spain', 'Portugal', 'North Africa', 'Western Mediterranean']),
 			'Norwegian Sea': Territory('Norwegian Sea', ['NWG', 'NorwSea', 'NRG', 'Norwegian'], False, True, False, ['North Atlantic Ocean', 'Barents Sea', 'Norway', 'North Sea', 'Edinburgh', 'Clyde']),
 			'North Sea': Territory('North Sea', ['NTH', 'NorSea', 'NTS'], False, True, False, ['Norwegian Sea', 'Norway', 'Skagerrack', 'Denmark', 'Heligoland Bight', 'Holland', 'Belgium', 'English Channel', 'London', 'Yorkshire', 'Edinburgh']),
-			'English Channel': Territory('English Channel', ['ENG', 'English', 'Channel', 'ECH'], False, True, False, ['Mid-Atlantic Ocean', 'Irish Sea', 'Wales', 'London', 'Belgium', 'Picardy', 'Brest']),
+			'English Channel': Territory('English Channel', ['ENG', 'English', 'Channel', 'ECH'], False, True, False, ['Mid-Atlantic Ocean', 'Irish Sea', 'Wales', 'London', 'Belgium', 'Picardy', 'Brest', 'North Sea']),
 			'Irish Sea': Territory('Irish Sea', ['IRI', 'Irish'], False, True, False, ['Mid-Atlantic Ocean', 'North Atlantic Ocean', 'Liverpool', 'Wales', 'English Channel']),
 			'Heligoland Bight': Territory('Heligoland Bight', ['HEL', 'Heligoland'], False, True, False, ['North Sea', 'Denmark', 'Kiel', 'Holland']),
 			'Skagerrack': Territory('Skagerrack', ['SKA'], False, True, False, ['North Sea', 'Norway', 'Sweden', 'Denmark']),
@@ -75,13 +75,13 @@ class Map():
 			'Western Mediterranean': Territory('Western Mediterranean', ['WES', 'WMED', 'West', 'Western', 'WestMed', 'WMS', 'WME', 'West Mediterranean'], False, True, False, ['Spain', 'Mid-Atlantic Ocean', 'North Africa', 'Tunis', 'Tyrrhenian', 'Gulf of Lyon']),
 			'Gulf of Lyon': Territory('Gulf of Lyon', ['LYO', 'GOL', 'GulfOfL', 'Lyon'], False, True, False, ['Spain', 'Marseilles', 'Piedmont', 'Tuscany', 'Tyrrhenian Sea', 'Western Mediterranean']),
 			'Tyrrhenian Sea': Territory('Tyrrhenian Sea', ['TYS', 'TYRR', 'Tyrrhenian', 'TYN', 'TYH'], False, True, False, ['Gulf of Lyon', 'Tuscany', 'Rome', 'Naples', 'Ionian Sea', 'Tunis', 'Western Mediterranean']),
-			'Ionian Sea': Territory('Ionian Sea', ['ION', 'Ionian'], False, True, False, ['Tunis', 'Tyrrhenian Sea', 'Naples', 'Apulia', 'Adriatic Sea', 'Albania', 'Greece', 'Aegean Sea']),
+			'Ionian Sea': Territory('Ionian Sea', ['ION', 'Ionian'], False, True, False, ['Tunis', 'Tyrrhenian Sea', 'Naples', 'Apulia', 'Adriatic Sea', 'Albania', 'Greece', 'Aegean Sea', 'Eastern Mediterranean']),
 			'Adriatic Sea': Territory('Adriatic Sea', ['ADR', 'Adriatic'], False, True, False, ['Venice', 'Trieste', 'Albania', 'Ionian Sea', 'Apulia']),
 			'Aegean Sea': Territory('Aegean Sea', ['AEG', 'Aegean'], False, True, False, ['Ionian Sea', 'Greece', 'Bulgaria', 'Constantinople', 'Smyrna', 'Eastern Mediterranean']),
 			'Eastern Mediterranean': Territory('Eastern Mediterranean', ['EAS', 'EMED', 'EAST', 'Eastern', 'EastMed', 'EMS', 'EME', 'East Mediterranean'], False, True, False, ['Ionian Sea', 'Aegean Sea', 'Smyrna', 'Syria']),
 			'Black Sea': Territory('Black Sea', ['BLA', 'Black'], False, True, False, ['Bulgaria', 'Rumania', 'Sevastopol', 'Armenia', 'Ankara', 'Constantinople']),
 		}
-		self.territories = {}
+		self.territories = {} # TODO: Just make all the references lowercase so you don't have to do this.
 		for territory in original_territories.values():
 			self.territories[simplify_string(territory.name)] = territory
 			for abbreviation in territory.abbreviations:
@@ -194,7 +194,9 @@ class Territory():
 		self.is_land = is_land
 		self.is_water = is_water
 		self.is_supply_center = is_supply_center
-		self.adjacent_territory_names = adjacent_territory_names
+		self.adjacent_territories = list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, adjacent_territory_names))))
+		self.adjacent_water = list(filter(lambda territory: territory.is_water, self.adjacent_territories))
+		self.adjacent_land = list(filter(lambda territory: territory.is_land, self.adjacent_territories))
 		self.owner = None
 		self.units = []
 
@@ -206,7 +208,7 @@ class Territory():
 			return_string = return_string + 'Water\n'
 		if self.is_supply_center:
 			return_string = return_string + 'Supply center\n'
-		return_string = return_string + 'Adjacent territories: ' + ''.join(list(map(lambda adjacent_territory: adjacent_territory.name + ', ', self.adjacent_territories()))) + '\n'
+		return_string = return_string + 'Adjacent territories: ' + ''.join(list(map(lambda adjacent_territory: adjacent_territory.name + ', ', self.adjacent_territories))) + '\n'
 		if self.owner != None:
 			return_string = return_string + 'Owner: ' + self.owner.name + '\n'
 		if len(self.units) > 0:
@@ -219,17 +221,8 @@ class Territory():
 		self.owner = player
 		self.owner.territories.append(self)
 
-	def adjacent_territories(self):
-		return list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, self.adjacent_territory_names))))
-
-	def adjacent_water(self):
-		return list(filter(lambda territory: territory.is_water, self.adjacent_territories()))
-
-	def adjacent_land(self):
-		return list(filter(lambda territory: territory.is_land, self.adjacent_territories()))
-
 	def is_landlocked(self):
-		return bool(len(list(filter(lambda adjacent_territory: adjacent_territory.is_water, self.adjacent_territories()))))
+		return bool(len(list(filter(lambda adjacent_territory: adjacent_territory.is_water, self.adjacent_territories))))
 
 class Nation():
 	def __init__(self, name):
@@ -320,15 +313,15 @@ class Unit():
 	def available_movement_targets(self):
 		if self.is_navy:
 			if self.territory.is_water:
-				return self.territory.adjacent_territories()
+				return self.territory.adjacent_territories
 			else:
-				movement_targets = self.territory.adjacent_water() + list(filter(lambda land_territory: not set(land_territory.adjacent_territories()).isdisjoint(self.territory.adjacent_water()), self.territory.adjacent_land())) # TODO - Restrict coastline movement to coastline entered from.
+				movement_targets = self.territory.adjacent_water + list(filter(lambda land_territory: True if self.last_territory in land_territory.adjacent_water else False, self.territory.adjacent_land))
 				if self.last_territory == None:
 					return movement_targets
 				else:
 					return movement_targets.append(self.last_territory)
 		else:
-			return self.territory.adjacent_land() + list(filter(lambda water_territory: not set(self.convoys).isdisjoint(water_territory.units), self.territory.adjacent_water())) # TODO - Add convoy-able land.
+			return self.territory.adjacent_land + list(filter(lambda water_territory: not set(self.convoys).isdisjoint(water_territory.units), self.territory.adjacent_water)) + list(territory for territory in [convoy.adjacent_land for convoy in self.convoys])
 
 class Command():
 	def __init__(self, help_string, action):
@@ -359,8 +352,7 @@ def view_command(query):
 	if len(query) < 2:
 		print(commands['view'].help_string)
 	elif query[1] == 'map':
-		print(game_map)
-		# TODO - show image representation of map on view map.
+		print(game_map) # TODO - show image representation of map on view map.
 	elif len(query) < 3:
 		print(commands['view'].help_string)
 	elif query[1] == 'territory':
@@ -432,6 +424,17 @@ def modify_command(query):
 	if game_map == None:
 		print('There is no map.')
 		return
+
+	if len(query) < 4:
+		print(commands['modify'].help_string)
+	elif query[1] == 'map':
+		pass # TODO
+	elif query[1] == 'territory':
+		pass # TODO
+	elif query[1] == 'unit':
+		pass # TODO
+	else:
+		print(commands['modify'].help_string)
 
 	print('Modify.') # TODO - For map, season should be modifiable.
 
