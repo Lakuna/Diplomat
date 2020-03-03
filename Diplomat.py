@@ -194,11 +194,14 @@ class Territory():
 		self.is_land = is_land
 		self.is_water = is_water
 		self.is_supply_center = is_supply_center
-		self.adjacent_territories = list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, adjacent_territory_names))))
-		self.adjacent_water = list(filter(lambda territory: territory.is_water, self.adjacent_territories))
-		self.adjacent_land = list(filter(lambda territory: territory.is_land, self.adjacent_territories))
+		self.adjacent_territory_names = adjacent_territory_names
 		self.owner = None
 		self.units = []
+
+	def finalize_adjacencies(self):
+		self.adjacent_territories = list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, self.adjacent_territory_names))))
+		self.adjacent_water = list(filter(lambda territory: territory.is_water, self.adjacent_territories))
+		self.adjacent_land = list(filter(lambda territory: territory.is_land, self.adjacent_territories))
 
 	def __str__(self):
 		return_string = 'Territory ' + self.name + '\nAbbreviations: ' + ''.join(list(map(lambda abbreviation: abbreviation + ', ', self.abbreviations))) + '\n'
@@ -456,6 +459,8 @@ def move_command(query):
 def new_map_command(query):
 	global game_map
 	game_map = Map()
+	for territory in game_map.territories.values():
+		territory.finalize_adjacencies()
 
 def standardize_command(query):
 	if game_map == None:
