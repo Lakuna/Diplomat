@@ -1,91 +1,90 @@
 import random
 from os import system, name
-# TODO - Move classes and methods into other files as appropriate.
 
 class Map():
 	def __init__(self):
-		original_territories = {
-			'Ankara': Territory('Ankara', ['ANK'], True, False, True, ['Constantinople', 'Black Sea', 'Armenia', 'Smyrna']),
-			'Belgium': Territory('Belgium', ['BEL'], True, False, True, ['English Channel', 'Picardy', 'North Sea', 'Holland', 'Ruhr', 'Burgundy']),
-			'Berlin': Territory('Berlin', ['BER'], True, False, True, ['Kiel', 'Baltic Sea', 'Prussia', 'Munich', 'Silesia']),
-			'Brest': Territory('Brest', ['BRE'], True, False, True, ['English Channel', 'Mid-Atlantic Ocean', 'Gascony', 'Paris', 'Picardy']),
-			'Budapest': Territory('Budapest', ['BUD'], True, False, True, ['Trieste', 'Vienna', 'Galicia', 'Rumania', 'Serbia']),
-			'Bulgaria': Territory('Bulgaria', ['BUL'], True, False, True, ['Serbia', 'Rumania', 'Black Sea', 'Constantinople', 'Aegean Sea', 'Greece']),
-			'Constantinople': Territory('Constantinople', ['CON'], True, True, True, ['Bulgaria', 'Black Sea', 'Ankara', 'Smyrna', 'Aegean Sea']),
-			'Denmark': Territory('Denmark', ['DEN'], True, True, True, ['Heligoland Bight', 'North Sea', 'Skagerrack', 'Baltic Sea', 'Kiel', 'Sweden']),
-			'Edinburgh': Territory('Edinburgh', ['EDI'], True, False, True, ['Clyde', 'Norwegian Sea', 'North Sea', 'Yorkshire', 'Liverpool']),
-			'Greece': Territory('Greece', ['GRE'], True, False, True, ['Albania', 'Serbia', 'Bulgaria', 'Aegean Sea', 'Ionian Sea']),
-			'Holland': Territory('Holland', ['HOL'], True, False, True, ['North Sea', 'Heligoland Bight', 'Kiel', 'Ruhr', 'Belgium']),
-			'Kiel': Territory('Kiel', ['KIE'], True, False, True, ['Holland', 'Heligoland Bight', 'Denmark', 'Baltic Sea', 'Berlin', 'Munich', 'Ruhr']),
-			'Liverpool': Territory('Liverpool', ['LVP', 'LIVP', 'LPL'], True, False, True, ['Clyde', 'North Atlantic Ocean', 'Edinburgh', 'Yorkshire', 'Wales', 'Irish Sea']),
-			'London': Territory('London', ['LON'], True, False, True, ['Wales', 'Yorkshire', 'North Sea', 'English Channel']),
-			'Marseilles': Territory('Marseilles', ['MAR', 'MARS'], True, False, True, ['Spain', 'Gascony', 'Burgundy', 'Gulf of Lyon', 'Piedmont']),
-			'Moscow': Territory('Moscow', ['MOS'], True, False, True, ['Saint Petersburg', 'Sevastopol', 'Ukraine', 'Warsaw', 'Livonia']),
-			'Munich': Territory('Munich', ['MUN'], True, False, True, ['Ruhr', 'Kiel', 'Berlin', 'Silesia', 'Bohemia', 'Tyrolia', 'Burgundy']),
-			'Naples': Territory('Naples', ['NAP'], True, False, True, ['Tyrrhenian Sea', 'Rome', 'Apulia', 'Ionian Sea']),
-			'Norway': Territory('Norway', ['NOR', 'NWY', 'NORW'], True, False, True, ['Skagerrack', 'North Sea', 'Norwegian Sea', 'Barents Sea', 'Sweden', 'Finland', 'Saint Petersburg']),
-			'Paris': Territory('Paris', ['PAR'], True, False, True, ['Brest', 'Picardy', 'Burgundy', 'Gascony']),
-			'Portugal': Territory('Portugal', ['POR'], True, False, True, ['Mid-Atlantic Ocean', 'Spain']),
-			'Rome': Territory('Rome', ['ROM'], True, False, True, ['Tuscany', 'Venice', 'Apulia', 'Naples', 'Tyrrhenian Sea']),
-			'Rumania': Territory('Rumania', ['RUH'], True, False, True, ['Budapest', 'Sevastopol', 'Black Sea', 'Bulgaria', 'Serbia', 'Galicia', 'Ukraine']),
-			'Saint Petersburg': Territory('Saint Petersburg', ['STP', 'St. Petersburg'], True, False, True, ['Gulf of Bothnia', 'Finland', 'Norway', 'Barents Sea', 'Moscow', 'Livonia']),
-			'Serbia': Territory('Serbia', ['SER'], True, False, True, ['Albania', 'Trieste', 'Budapest', 'Rumania', 'Bulgaria', 'Greece']),
-			'Sevastopol': Territory('Sevastopol', ['SEV'], True, False, True, ['Ukraine', 'Moscow', 'Armenia', 'Black Sea', 'Rumania']),
-			'Smyrna': Territory('Smyrna', ['SMY'], True, False, True, ['Constantinople', 'Ankara', 'Armenia', 'Syria', 'Eastern Mediterranean', 'Aegean Sea']),
-			'Spain': Territory('Spain', ['SPA'], True, False, True, ['Portugal', 'Mid-Atlantic Ocean', 'Gascony', 'Marseilles', 'Gulf of Lyon', 'Western Mediterranean']),
-			'Sweden': Territory('Sweden', ['SWE'], True, False, True, ['Norway', 'Finland', 'Gulf of Bothnia', 'Baltic Sea', 'Denmark', 'Skagerrack']),
-			'Trieste': Territory('Trieste', ['TRI'], True, False, True, ['Venice', 'Tyrolia', 'Vienna', 'Budapest', 'Serbia', 'Albania', 'Adriatic Sea']),
-			'Tunis': Territory('Tunis', ['TUN', 'Tunisia'], True, False, True, ['North Africa', 'Western Mediterranean', 'Tyrrhenian', 'Ionian Sea']),
-			'Venice': Territory('Venice', ['VEN'], True, False, True, ['Piedmont', 'Tyrolia', 'Trieste', 'Adriatic Sea', 'Apulia', 'Rome', 'Tuscany']),
-			'Vienna': Territory('Vienna', ['VIE'], True, False, True, ['Tyrolia', 'Bohemia', 'Galicia', 'Budapest', 'Trieste']),
-			'Warsaw': Territory('Warsaw', ['WAR'], True, False, True, ['Silesia', 'Prussia', 'Livonia', 'Moscow', 'Ukraine', 'Galicia']),
-			'Clyde': Territory('Clyde', ['CLY'], True, False, False, ['North Atlantic', 'Norwegian Sea', 'Edinburgh', 'Liverpool']),
-			'Yorkshire': Territory('Yorkshire', ['YOR', 'York', 'Yonkers'], False, True, False, ['Edinburgh', 'North Sea', 'London', 'Wales', 'Liverpool']),
-			'Wales': Territory('Wales', ['WAL'], True, False, False, ['Irish Sea', 'Liverpool', 'Yorkshire', 'London', 'English Channel']),
-			'Picardy': Territory('Picardy', ['PIC'], True, False, False, ['Brest', 'English Channel', 'Belgium', 'Burgundy', 'Paris']),
-			'Gascony': Territory('Gascony', ['GAS'], True, False, False, ['Brest', 'Paris', 'Burgundy', 'Marseilles', 'Spain', 'Mid-Atlantic Ocean']),
-			'Burgundy': Territory('Burgundy', ['BUR'], True, False, False, ['Paris', 'Picardy', 'Belgium', 'Ruhr', 'Munich', 'Marseilles', 'Gascony']),
-			'North Africa': Territory('North Africa', ['NAF', 'NORA'], True, False, False, ['Mid-Atlantic Ocean', 'Western Mediterranean', 'Tunis']),
-			'Ruhr': Territory('Ruhr', ['RUH'], True, False, False, ['Belgium', 'Holland', 'Kiel', 'Munich', 'Burgundy']),
-			'Prussia': Territory('Prussia', ['PRU'], True, False, False, ['Berlin', 'Baltic Sea', 'Livonia', 'Warsaw', 'Silesia']),
-			'Silesia': Territory('Silesia', ['SIL'], True, False, False, ['Munich', 'Berlin', 'Prussia', 'Warsaw', 'Galicia', 'Bohemia']),
-			'Piedmont': Territory('Piedmont', ['PIE'], True, False, False, ['Marseilles', 'Tyrolia', 'Venice', 'Tuscany', 'Gulf of Lyon']),
-			'Tuscany': Territory('Tuscany', ['TUS'], True, False, False, ['Gulf of Lyon', 'Piedmont', 'Venice', 'Rome', 'Tyrrhenian Sea']),
-			'Apulia': Territory('Apulia', ['APU'], True, False, False, ['Venice', 'Adriatic Sea', 'Ionian Sea', 'Naples', 'Rome']),
-			'Tyrolia': Territory('Tyrolia', ['TYR', 'TYL', 'TRL'], True, False, False, ['Piedmont', 'Munich', 'Bohemia', 'Vienna', 'Trieste', 'Venice']),
-			'Galicia': Territory('Galicia', ['GAL'], True, False, False, ['Bohemia', 'Silesia', 'Warsaw', 'Ukraine', 'Rumania', 'Budapest', 'Vienna']),
-			'Bohemia': Territory('Bohemia', ['BOH'], True, False, False, ['Munich', 'Silesia', 'Galicia', 'Vienna', 'Tyrolia']),
-			'Finland': Territory('Finland', ['FIN'], True, False, False, ['Sweden', 'Norway', 'Saint Petersburg', 'Gulf of Bothnia']),
-			'Livonia': Territory('Livonia', ['LVN', 'LIVO', 'LVO', 'LVA'], True, False, False, ['Gulf of Bothnia', 'Saint Petersburg', 'Moscow', 'Warsaw', 'Prussia', 'Baltic Sea']),
-			'Ukraine': Territory('Ukraine', ['UKR'], True, False, False, ['Warsaw', 'Moscow', 'Sevastopol', 'Rumania', 'Galicia']),
-			'Albania': Territory('Albania', ['ALB'], True, False, False, ['Adriatic Sea', 'Trieste', 'Serbia', 'Greece', 'Ionian Sea']),
-			'Armenia': Territory('Armenia', ['ARM'], True, False, False, ['Ankara', 'Black Sea', 'Syria', 'Smyrna', 'Sevastopol']),
-			'Syria': Territory('Syria', ['SYR'], True, False, False, ['Eastern Mediterranean', 'Smyrna', 'Armenia']),
-			'North Atlantic Ocean': Territory('North Atlantic Ocean', ['NAO', 'North Atlantic'], False, True, False, ['Clyde', 'Liverpool', 'Irish Sea', 'Mid-Atlantic Ocean', 'Norwegian Sea']),
-			'Mid-Atlantic Ocean': Territory('Mid-Atlantic Ocean', ['MAO', 'Mid Atlantic Ocean', 'Mid Atlantic', 'MID', 'MAT'], False, True, False, ['North Atlantic Ocean', 'Irish Sea', 'English Channel', 'Brest', 'Gascony', 'Spain', 'Portugal', 'North Africa', 'Western Mediterranean']),
-			'Norwegian Sea': Territory('Norwegian Sea', ['NWG', 'NorwSea', 'NRG', 'Norwegian'], False, True, False, ['North Atlantic Ocean', 'Barents Sea', 'Norway', 'North Sea', 'Edinburgh', 'Clyde']),
-			'North Sea': Territory('North Sea', ['NTH', 'NorSea', 'NTS'], False, True, False, ['Norwegian Sea', 'Norway', 'Skagerrack', 'Denmark', 'Heligoland Bight', 'Holland', 'Belgium', 'English Channel', 'London', 'Yorkshire', 'Edinburgh']),
-			'English Channel': Territory('English Channel', ['ENG', 'English', 'Channel', 'ECH'], False, True, False, ['Mid-Atlantic Ocean', 'Irish Sea', 'Wales', 'London', 'Belgium', 'Picardy', 'Brest', 'North Sea']),
-			'Irish Sea': Territory('Irish Sea', ['IRI', 'Irish'], False, True, False, ['Mid-Atlantic Ocean', 'North Atlantic Ocean', 'Liverpool', 'Wales', 'English Channel']),
-			'Heligoland Bight': Territory('Heligoland Bight', ['HEL', 'Heligoland'], False, True, False, ['North Sea', 'Denmark', 'Kiel', 'Holland']),
-			'Skagerrack': Territory('Skagerrack', ['SKA'], False, True, False, ['North Sea', 'Norway', 'Sweden', 'Denmark']),
-			'Baltic Sea': Territory('Baltic Sea', ['BAL', 'Baltic'], False, True, False, ['Denmark', 'Sweden', 'Gulf of Bothnia', 'Livonia', 'Prussia', 'Berlin', 'Kiel']),
-			'Gulf of Bothnia': Territory('Gulf of Bothnia', ['BOT', 'GOB', 'BOTH', 'GulfOfB', 'Bothnia'], False, True, False, ['Sweden', 'Finland', 'Saint Petersburg', 'Livonia', 'Baltic Sea']),
-			'Barents Sea': Territory('Barents Sea', ['BAR', 'Barents'], False, True, False, ['Norway', 'Norwegian Sea', 'Saint Petersburg']),
-			'Western Mediterranean': Territory('Western Mediterranean', ['WES', 'WMED', 'West', 'Western', 'WestMed', 'WMS', 'WME', 'West Mediterranean'], False, True, False, ['Spain', 'Mid-Atlantic Ocean', 'North Africa', 'Tunis', 'Tyrrhenian', 'Gulf of Lyon']),
-			'Gulf of Lyon': Territory('Gulf of Lyon', ['LYO', 'GOL', 'GulfOfL', 'Lyon'], False, True, False, ['Spain', 'Marseilles', 'Piedmont', 'Tuscany', 'Tyrrhenian Sea', 'Western Mediterranean']),
-			'Tyrrhenian Sea': Territory('Tyrrhenian Sea', ['TYS', 'TYRR', 'Tyrrhenian', 'TYN', 'TYH'], False, True, False, ['Gulf of Lyon', 'Tuscany', 'Rome', 'Naples', 'Ionian Sea', 'Tunis', 'Western Mediterranean']),
-			'Ionian Sea': Territory('Ionian Sea', ['ION', 'Ionian'], False, True, False, ['Tunis', 'Tyrrhenian Sea', 'Naples', 'Apulia', 'Adriatic Sea', 'Albania', 'Greece', 'Aegean Sea', 'Eastern Mediterranean']),
-			'Adriatic Sea': Territory('Adriatic Sea', ['ADR', 'Adriatic'], False, True, False, ['Venice', 'Trieste', 'Albania', 'Ionian Sea', 'Apulia']),
-			'Aegean Sea': Territory('Aegean Sea', ['AEG', 'Aegean'], False, True, False, ['Ionian Sea', 'Greece', 'Bulgaria', 'Constantinople', 'Smyrna', 'Eastern Mediterranean']),
-			'Eastern Mediterranean': Territory('Eastern Mediterranean', ['EAS', 'EMED', 'EAST', 'Eastern', 'EastMed', 'EMS', 'EME', 'East Mediterranean'], False, True, False, ['Ionian Sea', 'Aegean Sea', 'Smyrna', 'Syria']),
-			'Black Sea': Territory('Black Sea', ['BLA', 'Black'], False, True, False, ['Bulgaria', 'Rumania', 'Sevastopol', 'Armenia', 'Ankara', 'Constantinople']),
+		self.territories = {
+			'ankara': Territory('Ankara', ['ank'], True, False, True, ['con', 'bla', 'arm', 'smy']),
+			'belgium': Territory('Belgium', ['bel'], True, False, True, ['eng', 'pic', 'nth', 'hol', 'ruh', 'bur']),
+			'berlin': Territory('Berlin', ['ber'], True, False, True, ['kie', 'bal', 'pru', 'mun', 'sil']),
+			'brest': Territory('Brest', ['bre'], True, False, True, ['eng', 'mao', 'gas', 'par', 'pic']),
+			'budapest': Territory('Budapest', ['bud'], True, False, True, ['tri', 'vie', 'gal', 'rum', 'ser']),
+			'bulgaria': Territory('Bulgaria', ['bul'], True, False, True, ['ser', 'rum', 'bla', 'con', 'aeg', 'gre']),
+			'constantinople': Territory('Constantinople', ['con'], True, True, True, ['bul', 'bla', 'ank', 'smy', 'aeg']),
+			'denmark': Territory('Denmark', ['den'], True, True, True, ['hel', 'nth', 'ska', 'bal', 'kie', 'swe']),
+			'edinburgh': Territory('Edinburgh', ['edi'], True, False, True, ['cly', 'nwg', 'nth', 'yor', 'lvp']),
+			'greece': Territory('Greece', ['gre'], True, False, True, ['alb', 'ser', 'bul', 'aeg', 'ion']),
+			'holland': Territory('Holland', ['hol'], True, False, True, ['nth', 'hel', 'kie', 'ruh', 'bel']),
+			'kiel': Territory('Kiel', ['kie'], True, False, True, ['hol', 'hel', 'den', 'bal', 'ber', 'mun', 'ruh']),
+			'liverpool': Territory('Liverpool', ['lvp', 'livp', 'lpl'], True, False, True, ['cly', 'nao', 'edi', 'yor', 'wal', 'iri']),
+			'london': Territory('London', ['LON'], True, False, True, ['wal', 'yor', 'nth', 'eng']),
+			'marseilles': Territory('Marseilles', ['mar', 'mars'], True, False, True, ['spa', 'gas', 'bur', 'lyo', 'pie']),
+			'moscow': Territory('Moscow', ['mos'], True, False, True, ['stp', 'sev', 'ukr', 'war', 'liv']),
+			'munich': Territory('Munich', ['mun'], True, False, True, ['ruh', 'kie', 'ber', 'sil', 'boh', 'tys', 'bur']),
+			'naples': Territory('Naples', ['nap'], True, False, True, ['tyr', 'rom', 'apu', 'ion']),
+			'norway': Territory('Norway', ['nor', 'nwy', 'norw'], True, False, True, ['ska', 'nth', 'nwg', 'bar', 'swe', 'fin', 'stp']),
+			'paris': Territory('Paris', ['par'], True, False, True, ['bre', 'pic', 'bur', 'gas']),
+			'portugal': Territory('Portugal', ['por'], True, False, True, ['mao', 'spa']),
+			'rome': Territory('Rome', ['rom'], True, False, True, ['tus', 'ven', 'apu', 'nap', 'tyr']),
+			'rumania': Territory('Rumania', ['ruh'], True, False, True, ['bud', 'sev', 'bla', 'bul', 'ser', 'gal', 'ukr']),
+			'saintpetersburg': Territory('Saint Petersburg', ['stp', 'stpetersburg'], True, False, True, ['bot', 'fin', 'nar', 'bar', 'mos', 'liv']),
+			'serbia': Territory('Serbia', ['ser'], True, False, True, ['alb', 'tri', 'bud', 'rum', 'bul', 'gre']),
+			'sevastopol': Territory('Sevastopol', ['sev'], True, False, True, ['ukr', 'mos', 'arm', 'bla', 'rum']),
+			'smyrna': Territory('Smyrna', ['smy'], True, False, True, ['con', 'ank', 'arm', 'syr', 'eas', 'aeg']),
+			'spain': Territory('Spain', ['spa'], True, False, True, ['por', 'mao', 'gas', 'mer', 'lyo', 'wes']),
+			'sweden': Territory('Sweden', ['swe'], True, False, True, ['nor', 'fin', 'bot', 'bal', 'den', 'ska']),
+			'trieste': Territory('Trieste', ['tri'], True, False, True, ['ven', 'tyr', 'vie', 'bud', 'ser', 'alb', 'adr']),
+			'tunis': Territory('Tunis', ['tun', 'tunisia'], True, False, True, ['nth', 'wes', 'tys', 'ion']),
+			'venice': Territory('Venice', ['ven'], True, False, True, ['pie', 'tyr', 'tri', 'adr', 'apu', 'rom', 'tus']),
+			'vienna': Territory('Vienna', ['vie'], True, False, True, ['tyr', 'boh', 'gal', 'bud', 'tri']),
+			'warsaw': Territory('Warsaw', ['war'], True, False, True, ['sil', 'pru', 'liv', 'mos', 'ukr', 'gal']),
+			'clyde': Territory('Clyde', ['cly'], True, False, False, ['nao', 'nwg', 'edi', 'lvp']),
+			'yorkshire': Territory('Yorkshire', ['yor', 'york', 'yonkers'], False, True, False, ['edi', 'nth', 'lon', 'wal', 'lvp']),
+			'wales': Territory('Wales', ['wal'], True, False, False, ['iri', 'lvp', 'yor', 'lon', 'eng']),
+			'picardy': Territory('Picardy', ['pic'], True, False, False, ['bre', 'eng', 'bel', 'bur', 'par']),
+			'gascony': Territory('Gascony', ['gas'], True, False, False, ['bre', 'par', 'bur', 'mar', 'spa', 'mao']),
+			'burgundy': Territory('Burgundy', ['bur'], True, False, False, ['par', 'pic', 'bel', 'ruh', 'mun', 'mar', 'gas']),
+			'northafrica': Territory('North Africa', ['naf', 'nora'], True, False, False, ['mao', 'wes', 'tun']),
+			'ruhr': Territory('Ruhr', ['ruh'], True, False, False, ['bel', 'hol', 'kie', 'mun', 'bur']),
+			'prussia': Territory('Prussia', ['pru'], True, False, False, ['ber', 'bal', 'liv', 'war', 'sil']),
+			'silesia': Territory('Silesia', ['sil'], True, False, False, ['mun', 'ber', 'pru', 'war', 'gal', 'boh']),
+			'piedmont': Territory('Piedmont', ['pie'], True, False, False, ['mar', 'tyr', 'ven', 'tus', 'lyo']),
+			'tuscany': Territory('Tuscany', ['tus'], True, False, False, ['lyo', 'pie', 'ven', 'rom', 'tys']),
+			'apulia': Territory('Apulia', ['apu'], True, False, False, ['ven', 'adr', 'ion', 'nap', 'rom']),
+			'tyrolia': Territory('Tyrolia', ['tyr', 'tyl', 'trl'], True, False, False, ['pie', 'mun', 'boh', 'vie', 'tri', 'ven']),
+			'galicia': Territory('Galicia', ['gal'], True, False, False, ['boh', 'sil', 'war', 'ukr', 'rum', 'bud', 'vie']),
+			'bohemia': Territory('Bohemia', ['boh'], True, False, False, ['mun', 'sil', 'gal', 'vie', 'tyr']),
+			'finland': Territory('Finland', ['fin'], True, False, False, ['swe', 'nor', 'stp', 'bot']),
+			'livonia': Territory('Livonia', ['lvn', 'livo', 'lvo', 'lva'], True, False, False, ['bot', 'stp', 'mos', 'war', 'pru', 'bal']),
+			'ukraine': Territory('Ukraine', ['ukr'], True, False, False, ['war', 'mos', 'sev', 'rum', 'gal']),
+			'albania': Territory('Albania', ['alb'], True, False, False, ['adr', 'tri', 'ser', 'gre', 'ion']),
+			'armenia': Territory('Armenia', ['arm'], True, False, False, ['ank', 'bla', 'syr', 'smy', 'sev']),
+			'syria': Territory('Syria', ['syr'], True, False, False, ['eas', 'smy', 'arm']),
+			'northatlanticocean': Territory('North Atlantic Ocean', ['nao', 'northatlantic'], False, True, False, ['cly', 'lvp', 'iri', 'mao', 'nwg']),
+			'midatlanticocean': Territory('Mid-Atlantic Ocean', ['mao', 'midatlantic', 'mid', 'mat'], False, True, False, ['nao', 'iri', 'eng', 'bre', 'gas', 'spa', 'por', 'naf', 'wes']),
+			'norwegiansea': Territory('Norwegian Sea', ['nwg', 'norwsea', 'nrg', 'norwegian'], False, True, False, ['nao', 'bar', 'nor', 'nth', 'edi', 'cly']),
+			'northsea': Territory('North Sea', ['nth', 'norsea', 'nts'], False, True, False, ['nwg', 'nor', 'ska', 'den', 'hel', 'hol', 'bel', 'eng', 'lon', 'yor', 'edi']),
+			'englishchannel': Territory('English Channel', ['eng', 'english', 'channel', 'ech'], False, True, False, ['mao', 'iri', 'wal', 'lon', 'bel', 'pic', 'bre', 'nth']),
+			'irishsea': Territory('Irish Sea', ['iri', 'irish'], False, True, False, ['mao', 'nao', 'lvp', 'wal', 'eng']),
+			'heligolandbight': Territory('Heligoland Bight', ['hel', 'heligoland'], False, True, False, ['nth', 'den', 'kie', 'hol']),
+			'skagerrack': Territory('Skagerrack', ['ska'], False, True, False, ['nth', 'nor', 'swe', 'den']),
+			'balticsea': Territory('Baltic Sea', ['bal', 'baltic'], False, True, False, ['den', 'swe', 'bot', 'liv', 'pru', 'ber', 'kie']),
+			'gulfofbothnia': Territory('Gulf of Bothnia', ['bot', 'gob', 'both', 'gulfofb', 'bothnia'], False, True, False, ['swe', 'fin', 'stp', 'liv', 'bal']),
+			'barentssea': Territory('Barents Sea', ['bar', 'barents'], False, True, False, ['nor', 'nwg', 'stp']),
+			'westernmediterranean': Territory('Western Mediterranean', ['wes', 'wmed', 'west', 'western', 'westmed', 'wms', 'wme', 'westmediterranean'], False, True, False, ['spa', 'mao', 'naf', 'tun', 'tys', 'lyo']),
+			'gulfoflyon': Territory('Gulf of Lyon', ['lyo', 'gol', 'gulfofl', 'lyon'], False, True, False, ['spa', 'mar', 'pie', 'tus', 'tys', 'wes']),
+			'tyrrheniansea': Territory('Tyrrhenian Sea', ['tys', 'tyrr', 'tyrrhenian', 'tyn', 'tyh'], False, True, False, ['lyo', 'tus', 'rom', 'nap', 'ion', 'tun', 'wes']),
+			'ioniansea': Territory('Ionian Sea', ['ion', 'ionian'], False, True, False, ['tun', 'tys', 'nap', 'apu', 'adr', 'alb', 'gre', 'aeg', 'eas']),
+			'adriaticsea': Territory('Adriatic Sea', ['adr', 'adriatic'], False, True, False, ['ven', 'tri', 'alb', 'ion', 'apu']),
+			'aegeansea': Territory('Aegean Sea', ['aeg', 'aegean'], False, True, False, ['ion', 'gre', 'bul', 'con', 'smy', 'eas']),
+			'easternmediterranean': Territory('Eastern Mediterranean', ['eas', 'emed', 'east', 'eastern', 'eastmed', 'ems', 'eme', 'eastmediterranean'], False, True, False, ['ion', 'aeg', 'smy', 'syr']),
+			'blacksea': Territory('Black Sea', ['bla', 'black'], False, True, False, ['bul', 'rum', 'sev', 'arm', 'ank', 'con']),
 		}
-		self.territories = {} # TODO: Just make all the references lowercase so you don't have to do this.
-		for territory in original_territories.values():
-			self.territories[simplify_string(territory.name)] = territory
+		territory_abbreviation_dictionary = {}
+		for territory in self.territories.values():
 			for abbreviation in territory.abbreviations:
-				self.territories[simplify_string(abbreviation)] = territory
+				territory_abbreviation_dictionary[abbreviation] = territory
+		self.territories.update(territory_abbreviation_dictionary)
 
 		self.nations = {
 			'italy': Nation('Italy'),
@@ -199,23 +198,23 @@ class Territory():
 		self.units = []
 
 	def finalize_adjacencies(self):
-		self.adjacent_territories = list(map(lambda territory_name: game_map.territories[simplify_string(territory_name)], list(filter(lambda adjacent_territory_name: simplify_string(adjacent_territory_name) in game_map.territories, self.adjacent_territory_names))))
+		self.adjacent_territories = list(map(lambda territory_name: game_map.territories[territory_name], list(filter(lambda adjacent_territory_name: adjacent_territory_name in game_map.territories, self.adjacent_territory_names))))
 		self.adjacent_water = list(filter(lambda territory: territory.is_water, self.adjacent_territories))
 		self.adjacent_land = list(filter(lambda territory: territory.is_land, self.adjacent_territories))
 
 	def __str__(self):
-		return_string = 'Territory ' + self.name + '\nAbbreviations: ' + ''.join(list(map(lambda abbreviation: abbreviation + ', ', self.abbreviations))) + '\n'
+		return_string = 'Territory ' + self.name + '\nAbbreviations: ' + ''.join(list(map(lambda abbreviation: abbreviation + ', ', self.abbreviations)))
 		if self.is_land:
-			return_string = return_string + 'Land\n'
+			return_string = return_string + '\nLand'
 		if self.is_water:
-			return_string = return_string + 'Water\n'
+			return_string = return_string + '\nWater'
 		if self.is_supply_center:
-			return_string = return_string + 'Supply center\n'
-		return_string = return_string + 'Adjacent territories: ' + ''.join(list(map(lambda adjacent_territory: adjacent_territory.name + ', ', self.adjacent_territories))) + '\n'
+			return_string = return_string + '\nSupply center'
+		return_string = return_string + '\nAdjacent territories: ' + ''.join(list(map(lambda adjacent_territory: adjacent_territory.name + ', ', self.adjacent_territories)))
 		if self.owner != None:
-			return_string = return_string + 'Owner: ' + self.owner.name + '\n'
+			return_string = return_string + '\nOwner: ' + self.owner.name
 		if len(self.units) > 0:
-			return_string = return_string + 'Units: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\n'
+			return_string = return_string + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units)))
 		return return_string
 
 	def set_owner(self, player):
@@ -265,10 +264,10 @@ class Unit():
 			return_string = 'Navy '
 		else:
 			return_string = 'Army '
-		return_string = return_string + self.territory.name + '\nOwner: ' + self.owner.name + '\n'
+		return_string = return_string + self.territory.name + '\nOwner: ' + self.owner.name
 		if self.last_territory:
-			return_string = return_string + 'Last territory: ' + self.last_territory.name + '\n'
-		return_string = return_string + 'Identifier: ' + self.identifier()
+			return_string = return_string + '\nLast territory: ' + self.last_territory.name
+		return_string = return_string + '\nIdentifier: ' + self.identifier()
 		if self.action_target != None:
 			return_string = return_string + '\nCurrent action: ' + self.action + ' to\n---' + self.action_target + '\n---'
 		return_string = return_string + '\nAvailable movement targets: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.available_movement_targets())))
@@ -333,9 +332,6 @@ class Command():
 
 	def action(self, query):
 		self.action(query)
-
-def simplify_string(string):
-	return ''.join(list([character for character in string if character.isalpha()])).lower()
 
 def help_command(query):
 	if len(query) == 1:
@@ -575,7 +571,7 @@ game_map = None
 
 command = [None]
 while command[0] != 'exit':
-	command = list(map(lambda word: simplify_string(word), input('>').split()))
+	command = list(map(lambda word: ''.join(list([character for character in word if character.isalpha()])).lower(), input('\n>').split()))
 
 	if len(command) == 0:
 		print(help_string)
