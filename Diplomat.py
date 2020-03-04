@@ -427,7 +427,10 @@ def modify_command(query):
 	if len(query) < 4:
 		print(commands['modify'].help_string)
 	elif query[1] == 'map':
-		pass # TODO
+		if query[2] == 'season':
+			pass # TODO
+		elif query[2] == 'hehe':
+			pass # TODO
 	elif query[1] == 'territory':
 		pass # TODO
 	elif query[1] == 'unit':
