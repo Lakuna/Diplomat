@@ -301,10 +301,22 @@ class Map():
 						print(territory.name + ' switched control to ' + territory.owner.name + '.')
 
 		for nation in self.nations.values():
-			if len(nation.territories) == 0:
-				print(nation.name + ' is out.')
-			elif len(nation.territories) >= 20:
-				print(nation.name + ' won!') # TODO - Make victory and defeat output in a way that iterate can take advantage of.
+			if len(nation.territories) >= 20:
+				global current_game_placements
+				current_game_placements = {}
+				temp_nations = self.nations.values()
+				place = 1
+				while len(temp_nations) > 0:
+					most_supply_centers = 0
+					for nation in temp_nations:
+						if most_supply_centers < len(list(filter(lambda territory: territory.is_supply_center, nation.territories))):
+							most_supply_centers = len(list(filter(lambda territory: territory.is_supply_center, nation.territories)))
+					for nation in temp_nations:
+						if len(list(filter(lambda territory: territory.is_supply_center, nation.territories))) == most_supply_centers:
+							current_game_placements[nation] = place
+							temp_nations.remove(nation)
+							place = place + 1
+				break
 		print('Finished turn.')
 
 class Territory():
@@ -691,6 +703,7 @@ def start_command(query):
 	global active_nation
 	global in_game
 	global commands
+	global current_game_placements
 	if len(query) < 2:
 		print(commands['start'].help_string)
 	else:
@@ -701,6 +714,7 @@ def start_command(query):
 				nation.finalize_starting_territory()
 			in_game = True
 			commands = game_commands
+			current_game_placements = None
 			print('Started playing Diplomacy as ' + active_nation.name + '.')
 		else:
 			print('Unknown nation \'' + query[1] + '\'.')
@@ -710,7 +724,46 @@ def iterate_command(query):
 		print('There is no map.')
 		return
 
-	print('Iterate.') # TODO - Return projected rankings, best alliance for target nation, and moveset of fastest win for target nation.
+	if len(query) < 2:
+		print(commands[query[0]].help_string)
+	else:
+		placement_results = {}
+		fastest_win_turns = {}
+		total_win_turns = {}
+		total_wins = {}
+		for nation in game_map.nations.values():
+			placement_results[nation] = 0
+			fastest_win_turns[nation] = 1000
+			total_win_turns[nation] = 0
+			total_wins[nation] = 0
+
+		selected_nation = None
+		best_first_moves = {}
+		best_ally = None # TODO - Best ally calculation.
+		if len(query) > 2:
+			if query[2] in game_map.nations:
+				selected_nation = game_map.nations[query[2]]
+				for unit in selected_nation.units:
+					best_first_moves[unit] = unit.action
+			else:
+				print('Unknown nation \'' + query[2] + '\'.')
+
+		starting_map = game_map
+
+		for i in range(0, int(query[1])):
+			game_map = starting_map
+			turns = 0
+			while current_game_placements == None:
+				game_map.resolve_turn() # Play game.
+			for nation in game_map.nations.values():
+				placement_results[nation] = placement_results[nation] + current_game_placements[nation]
+				if placement_results[nation] == 1:
+					total_win_turns[nation] = total_win_turns[nation] + turns
+					total_wins[nation] = total_wins[nation] + 1
+					if turns < fastest_win_turns[nation]:
+						fastest_win_turns[nation] = turns
+				if nation == selected_nation:
+					pass # TODO - Calculate best turn 1 moves for selected nation.
 
 def clear_command(query):
 	if name == 'nt':
@@ -821,6 +874,7 @@ commands = setup_commands
 
 in_game = False
 active_nation = None
+current_game_placements = None
 game_map = None
 
 command = [None]
