@@ -3,6 +3,8 @@ from os import system, name
 # TODO - Reduce nesting throughout program by inverting if statements. In commands, get each part of the query as the thing it represents before moving on to logic.
 # TODO - Move all action logic to resolution step. Simply hold if it's an illegal command.
 # TODO - Allow loading text files with lists of commands for bulk command entry. Can be useful for designing custom maps and such.
+# TODO - When iterating, make nations favor moves which had them win in the past.
+# TODO - Expand unit AI to take into account nearby enemy units as well.
 
 class Map():
 	def __init__(self):
@@ -215,6 +217,18 @@ class Map():
 				active_nation = player_nation
 
 		for nation in list(filter(lambda nation: nation.player_type == 'ai', self.nations.values())):
+			if len(nation.units) > nation.maximum_units(): # Cut down to maximum units.
+				print(nation.name + ' cutting down to maximum units.')
+				player_nation = active_nation
+				active_nation = nation
+				while len(nation.units) > nation.maximum_units():
+					command = ['destroy']
+					unit = random.choice(nation.units)
+					command.append(unit.territory.abbreviations[0])
+					commands[command[0]].action(command)
+				active_nation = player_nation
+
+		for nation in list(filter(lambda nation: nation.player_type == 'ai', self.nations.values())):
 			nation.automatic_turn() # Assign commands.
 
 		for nation in self.nations.values(): # Resolve all actions.
@@ -273,15 +287,21 @@ class Map():
 			self.season == 'fall'
 		else:
 			self.season == 'spring'
+			# TODO - City control switching not working for some reason.
 			for territory in self.territories.values():
 				if len(territory.units) > 0:
 					territory.owner.territories.remove(territory)
+					old_owner = territory.owner
 					territory.owner = territory.units[0].owner
 					territory.owner.territories.append(territory)
+					if not old_owner == territory.owner:
+						print(territory.name + ' switched control to ' + territory.owner.name + '.')
 
 		for nation in self.nations.values():
-			if len(nation.territories) > 19:
-				print(nation.name + ' won!') # TODO
+			if len(nation.territories) == 0:
+				print(nation.name + ' is out.')
+			elif len(nation.territories) >= 20:
+				print(nation.name + ' won!') # TODO - Make victory and defeat output in a way that iterate can take advantage of.
 		print('Finished turn.')
 
 class Territory():
@@ -637,7 +657,6 @@ def move_command(query):
 							if game_map.territories[query[2]] in unit.available_movement_targets():
 								unit.action = 'move'
 								unit.action_target = game_map.territories[query[2]]
-								print(unit.identifier() + ' moving to ' + game_map.territories[query[2]].name + '.')
 								successful = True
 					if not successful:
 						print('No units were moved. You didn\'t control a unit on the specified territory, or the specified target was out of range.')
