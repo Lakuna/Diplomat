@@ -1,5 +1,8 @@
 import random
 from os import system, name
+# TODO - Reduce nesting throughout program by inverting if statements. In commands, get each part of the query as the thing it represents before moving on to logic.
+# TODO - Move all action logic to resolution step. Simply hold if it's an illegal command.
+# TODO - Allow loading text files with lists of commands for bulk command entry. Can be useful for designing custom maps and such.
 
 class Map():
 	def __init__(self):
@@ -98,8 +101,10 @@ class Map():
 
 		self.season = 'spring'
 
+		print('Created empty map.')
+
 	def __str__(self):
-		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '), ', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations)))
+		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '), ', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations))) + '\nSeason: ' + self.season
 
 	def standard_setup(self):
 		self.territories['piedmont'].set_owner(self.nations['italy'])
@@ -183,8 +188,10 @@ class Map():
 		Unit(True, self.nations['germany'], self.territories['kiel'])
 		self.nations['germany'].finalize_starting_territory()
 
+		print('Set up map according to standard Diplomacy rules.')
+
 	def resolve_turn(self):
-		pass # TODO - Resolve convoy -> move -> support -> conflicts -> add/remove cities (Fall) -> add/remove units (Fall) -> switch season
+		pass # TODO - Resolve convoy -> move -> support -> conflicts -> add/remove cities (Fall) -> add/remove units (Fall) -> switch season. Return all unit powers to 1. SET UNIT COUNT TO MAX BEFORE DOING TURN STUFF.
 
 class Territory():
 	def __init__(self, name, abbreviations, is_land, is_water, is_supply_center, adjacent_territory_names):
@@ -219,7 +226,7 @@ class Territory():
 
 	def set_owner(self, player):
 		if self.owner != None:
-			self.owner.territories.pop(self.name, None)
+			self.owner.territories.remove(self.name)
 		self.owner = player
 		self.owner.territories.append(self)
 
@@ -235,7 +242,7 @@ class Nation():
 		self.player_type = 'ai'
 
 	def __str__(self):
-		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\nProductive territories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.productive_territories)))
+		return 'Nation ' + self.name + '\nTerritories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.territories))) + '\nUnits: ' + ''.join(list(map(lambda unit: unit.identifier() + ', ', self.units))) + '\nProductive territories: ' + ''.join(list(map(lambda territory: territory.name + ', ', self.productive_territories))) + '\nMaximum units: ' + str(self.maximum_units())
 
 	def finalize_starting_territory(self):
 		self.productive_territories = list(filter(lambda territory: territory.is_supply_center, self.territories))
@@ -244,7 +251,24 @@ class Nation():
 		return len(list(filter(lambda territory: territory.is_supply_center, self.territories)))
 
 	def automatic_turn(self):
-		pass # TODO - For AI players. Equal chance for each individual action. Convoy only if allied land unit is adjacent. Support only if allied land unit is moving into adjacent. Return all unit powers to 1.
+		for unit in self.units:
+			available_actions = [['hold']] # One action for holding.
+			for territory in unit.available_movement_targets():
+				available_actions.append(['move', unit.territory.abbreviations[0], territory.abbreviations[0]]) # One for each available movement.
+			if unit.is_navy:
+				for ally_unit in self.units:
+					if not ally_unit.is_navy:
+						if ally_unit.territory in unit.available_movement_targets():
+							available_actions.append(['convoy', unit.territory.abbreviations[0], ally_unit.territory.abbreviations[0]]) # One for each available convoy.
+			for ally_unit in self.unit:
+				if ally_unit.action == 'move':
+					if ally_unit.action_target in unit.available_movement_targets():
+						available_actions.append(['support', unit.territory.abbreviations[0], ally_unit.action_target.abbreviations[0]]) # One for each available support.
+			command = random.choice(available_actions)
+			player_nation = active_nation
+			active_nation = self
+			commands[command[0]].action(command)
+			active_nation = player_nation
 
 class Unit():
 	def __init__(self, is_navy, owner, territory):
@@ -279,34 +303,31 @@ class Unit():
 		else:
 			return 'A ' + self.territory.abbreviations[0]
 
-	def move_to(self, territory):
-		self.action = 'move'
-		self.action_target = territory
-
-	def support_to(self, unit):
-		self.action = 'support'
-		self.action_target = unit
-
-	def convoy_to(self, unit):
-		self.action = 'convoy'
-		self.action_target = unit
-
 	def resolve_action(self):
 		if self.action == 'move':
 			self.last_territory = self.territory
-			self.territory.units.pop(self, None)
+			self.territory.units.remove(self)
 			self.territory = self.action_target
 			self.territory.units.append(self)
-			if self.is_navy == False:
-				while self.territory.is_land == False:
-					self.territory.units.pop(self, None)
-					self.territory = random.choice(self.available_movement_targets())
-					self.territory.units.append(self)
+			print(self.identifier() + ' -> ' + self.territory.abbreviations[0])
 		elif self.action == 'support':
-			if self.action_target.territory in self.available_movement_targets():
-				self.action_target.power = self.action_target.power + 1
-				self.power = self.power - 1
-		# Convoy applied as command is given to allow move to work correctly.
+			self.power = self.power - 1
+			if len(self.action_target.units) > 0:
+				for unit in self.action_target.units:
+					if unit.owner == self.owner:
+						unit.power = unit.power + 1
+						print(self.identifier() + ' -S- ' + unit.identifier() + ' -> ' + unit.action_target.abbreviations[0])
+			else:
+				print(self.identifier() + ' HOLD (illegal support).')
+		elif self.action == 'convoy':
+			self.power = self.power - 1
+			if self.action_target.action == 'move':
+				print(self.identifier() + ' -C- ' + self.action_target.identifier() + ' -> ' + self.action_target.action_target.abbreviations[0])
+			else:
+				print(self.identifier() + ' HOLD (illegal convoy).')
+			# Convoy applied as command is given to allow move to work correctly.
+		else:
+			print(self.identifier() + ' HOLD')
 		self.action = 'hold'
 		self.action_target = None
 		self.convoys = []
@@ -383,20 +404,22 @@ def new_command(query):
 	if in_game:
 		if len(query) < 3:
 			print(commands['new'].help_string)
-		elif len(player_nation.units) >= player_nation.maximum_units():
+		elif len(active_nation.units) >= active_nation.maximum_units():
 			print('Already at maximum units.')
 		else:
-			if query[1] in player_nation.territories:
+			if query[1] in active_nation.territories:
 				if len(game_map.territories[query[1]].units) > 0:
 					print(game_map.territories[query[1]].name + ' already has a unit.')
-				elif game_map.territories[query[1]] in player_nation.productive_territories:
+				elif game_map.territories[query[1]] in active_nation.productive_territories:
 					if query[2] == 'yes':
 						if not game_map.territories[query[1]].is_landlocked():
-							Unit(True, player_nation, game_map.territories[query[1]])
+							Unit(True, active_nation, game_map.territories[query[1]])
+							print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
 						else:
 							print('Navies must be placed on a coast.')
 					elif query[2] == 'no':
-						Unit(False, player_nation, game_map.territories[query[1]])
+						Unit(False, active_nation, game_map.territories[query[1]])
+						print('Created new Army on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
 					else:
 						print(commands['new'].help_string)
 				else:
@@ -413,8 +436,10 @@ def new_command(query):
 				elif query[2] in game_map.nations:
 					if query[3] == 'yes':
 						Unit(True, game_map.nations[query[2]], game_map.territories[query[1]])
+						print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + game_map.nations[query[2]].name + '.')
 					elif query[3] == 'no':
 						Unit(False, game_map.nations[query[2]], game_map.territories[query[1]])
+						print('Created new Army on ' + game_map.territories[query[1]].name + ' for ' + game_map.nations[query[2]].name + '.')
 					else:
 						print(commands['new'].help_string)
 				else:
@@ -433,8 +458,10 @@ def modify_command(query):
 		if query[3] == 'season':
 			if query[4] == 'spring':
 				game_map.season = 'spring'
+				print('Set season to Spring.')
 			elif query[4] == 'fall':
 				game_map.season = 'fall'
+				print('Set season to Fall.')
 			else:
 				print('Available options: SPRING/FALL')
 		else:
@@ -444,13 +471,17 @@ def modify_command(query):
 			if query[3] == 'supplycenter':
 				if query[4] == 'yes':
 					game_map.territories[query[2]].is_supply_center = True
+					print('Set ' + game_map.territories[query[2]].name + ' to be a supply center.')
 				elif query[4] == 'no':
 					game_map.territories[query[2]].is_supply_center = False
+					print('Set ' + game_map.territories[query[2]].name + ' to not be a supply center.')
 				else:
 					print('Available options: YES/NO')
 			elif query[3] == 'owner':
 				if query[4] in game_map.nations:
+					game_map.territories[query[3]].owner.territories.remove(game_map.territories[query[3]])
 					game_map.territories[query[3]].owner = game_map.nations[query[4]]
+					print('Set owner of ' + game_map.territories[query[3]].name + ' to ' + game_map.nations[query[4]] + '.')
 				else:
 					print('Unknown nation \'' + query[4] + '\'.')
 			else:
@@ -466,29 +497,31 @@ def destroy_command(query):
 		return
 
 	if in_game:
-		if len(player_nation.units) <= player_nation.maximum_units():
+		if len(query) < 2:
+			print(commands['destroy'].help_string)
+		elif len(active_nation.units) <= active_nation.maximum_units():
 			print('Cannot remove units while at or below maximum units.')
-		elif query[1] in player_nation.territories:
+		elif query[1] in game_map.territories:
 			for unit in game_map.territories[query[1]].units:
-				if unit.owner = player_nation:
-					unit.territory.units.pop(unit, None)
-					unit.owner.units.pop(unit, None)
+				if unit.owner == active_nation:
+					unit.territory.units.remove(unit)
+					unit.owner.units.remove(unit)
+					print('Destroyed ' + unit.identifier())
 		else:
 			print('Unknown territory \'' + query[1] + '\'.')
 	else:
-		if query[1] in game_map.territories:
+		if len(query) < 2:
+			print(commands['destroy'].help_string)
+		elif query[1] in game_map.territories:
 			for unit in game_map.territories[query[1]].units:
-				unit.territory.units.pop(unit, None)
-				unit.owner.units.pop(unit, None)
+				unit.territory.units.remove(unit)
+				unit.owner.units.remove(unit)
+				print('Destroyed ' + unit.identifier())
 		else:
 			print('Unknown territory \'' + query[1] + '\'.')
 
 def move_command(query):
-	if game_map == None:
-		print('There is no map.')
-		return
-
-	if len(player_nation.units) > player_nation.maximum_units():
+	if len(active_nation.units) > active_nation.maximum_units():
 		print('Too many units. Must remove some before making actions.')
 		return
 
@@ -496,14 +529,22 @@ def move_command(query):
 		print(commands['move'].help_string)
 	else:
 		if query[1] in game_map.territories:
-			if len(game_map.territories[query[1]].units) > 0:
-				for unit in game_map.territories[query[1]].units.values():
-					if unit.owner = player_nation:
-						if query[2] in unit.adjacent_territories:
-							unit.action = 'move'
-							unit.action_target = game_map.territories[query[2]]
+			if query[2] in game_map.territories:
+				if len(game_map.territories[query[1]].units) > 0:
+					successful = False
+					for unit in game_map.territories[query[1]].units:
+						if unit.owner == active_nation:
+							if game_map.territories[query[2]] in unit.available_movement_targets():
+								unit.action = 'move'
+								unit.action_target = game_map.territories[query[2]]
+								print(unit.identifier() + ' moving to ' + game_map.territories[query[2]].name + '.')
+								successful = True
+					if not successful:
+						print('No units were moved. You didn\'t control a unit on the specified territory, or the specified target was out of range.')
+				else:
+					print('No units in ' + game_map.territories[query[1]].name + '.')
 			else:
-				print('No units in ' + game_map.territories[query[1]].name + '.')
+				print('Unknown territory \'' + query[2] + '\'.')
 		else:
 			print('Unknown territory \'' + query[1] + '\'.')
 
@@ -525,19 +566,20 @@ def start_command(query):
 		print('There is no map.')
 		return
 
-	global player_nation
+	global active_nation
 	global in_game
 	global commands
 	if len(query) < 2:
 		print(commands['start'].help_string)
 	else:
 		if query[1] in game_map.nations:
-			player_nation = game_map.nations[query[1]]
-			player_nation.player_type = 'human'
+			active_nation = game_map.nations[query[1]]
+			active_nation.player_type = 'human'
 			for nation in game_map.nations.values():
 				nation.finalize_starting_territory()
 			in_game = True
 			commands = game_commands
+			print('Started playing Diplomacy as ' + active_nation.name + '.')
 		else:
 			print('Unknown nation \'' + query[1] + '\'.')
 
@@ -555,55 +597,73 @@ def clear_command(query):
 		_ = system('clear')
 
 def convoy_command(query):
-	if game_map == None:
-		print('There is no map.')
-		return
-
-	if len(player_nation.units) > player_nation.maximum_units():
+	if len(active_nation.units) > active_nation.maximum_units():
 		print('Too many units. Must remove some before making actions.')
 		return
 
 	if len(query) < 3:
 		print(commands['convoy'].help_string)
 	elif query[1] in game_map.territories:
-		if len(game_map.territories[query[1]].units) > 0:
-			for unit in game_map.territories[query[1]].units.values():
-				if unit.owner == player_nation:
-					unit.power = unit.power - 1
-					# TODO
+		if query[2] in game_map.territories[query[1]].adjacent_territories:
+			if len(game_map.territories[query[1]].units) > 0:
+				if len(game_map.territories[query[2].units]) > 0:
+					successful = False
+					for unit in game_map.territories[query[1]].units:
+						for target in game_map.territories[query[2]].units:
+							if unit.owner == active_nation and target.owner == active_nation:
+								unit.action = 'convoy'
+								unit.action_target = target
+								target.convoys.append(unit)
+								successful = True
+					if not successful:
+						print('No units were convoyed. You didn\'t control a unit on one or both of the specified territories.')
+				else:
+					print('No units in ' + game_map.territories[query[2]].name + '.')
+			else:
+				print('No units in ' + game_map.territories[query[1]].name + '.')
 		else:
-			print('No units in ' + game_map.territories[query[1]].name + '.')
+			print('Could not find territory \'' + query[2] + '\' adjacent to ' + game_map.territories[query[1]].name + '.')
 	else:
 		print('Unknown territory \'' + query[1] + '\'.')
 
-	print('Convoy.') # TODO
-
 def support_command(query):
-	if game_map == None:
-		print('There is no map.')
-		return
-
-	if len(player_nation.units) > player_nation.maximum_units():
+	if len(active_nation.units) > active_nation.maximum_units():
 		print('Too many units. Must remove some before making actions.')
 		return
 
-	print('Support.') # TODO
+	if len(query) < 3:
+		print(commands['support'].help_string)
+	elif query[1] in game_map.territories:
+		if query[2] in game_map.territories: # Don't look for territory in adjacent territories since supports happen into the tile a unit is moving into.
+			if len(game_map.territories[query[1]].units) > 0:
+				for unit in game_map.territories[query[1]].units:
+					if unit.owner == active_nation:
+						unit.action = 'support'
+						unit.action_target = game_map.territories[query[2]]
+				else:
+					print('No units in ' + game_map.territories[query[2]].name + '.')
+			else:
+				print('No units in ' + game_map.territories[query[1]].name + '.')
+		else:
+			print('Unknown territory \'' + query[2] + '\'.')
+	else:
+		print('Unknown territory \'' + query[1] + '\'.')
 
 def end_command(query):
-	global player_nation
+	global active_nation
 	global in_game
 	global commands
-	player_nation.player_type = 'ai'
-	player_nation = None
+	active_nation.player_type = 'ai'
+	active_nation = None
 	in_game = False
 	commands = setup_commands
 
 def resolve_command(query):
-	if game_map == None:
-		print('There is no map.')
+	if len(active_nation.units) > active_nation.maximum_units():
+		print('Too many units. Must remove some before making actions.')
 		return
 
-	print('Resolve.') # TODO
+	game_map.resolve_turn()
 
 print('Diplomat v1.0 by Travis Martin.')
 print('Type \'help\' for a list of commands.')
@@ -638,7 +698,7 @@ game_commands = {
 commands = setup_commands
 
 in_game = False
-player_nation = None
+active_nation = None
 game_map = None
 
 command = [None]
