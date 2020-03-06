@@ -238,6 +238,8 @@ class Map():
 				unit.resolve_action()
 			for unit in list(filter(lambda unit: unit.action == 'support', nation.units)):
 				unit.resolve_action()
+			for unit in list(filter(lambda unit: unit.action == 'hold', nation.units)):
+				unit.resolve_action()
 
 		for territory in self.territories.values():
 			if len(territory.units) > 1:
@@ -284,17 +286,18 @@ class Map():
 				unit.power = 1
 
 		if self.season == 'spring':
-			self.season == 'fall'
+			self.season = 'fall'
 		else:
-			self.season == 'spring'
-			# TODO - City control switching not working for some reason.
+			self.season = 'spring'
 			for territory in self.territories.values():
 				if len(territory.units) > 0:
-					territory.owner.territories.remove(territory)
-					old_owner = territory.owner
+					old_owner = None
+					if territory.owner != None:
+						territory.owner.territories.remove(territory)
+						old_owner = territory.owner
 					territory.owner = territory.units[0].owner
 					territory.owner.territories.append(territory)
-					if not old_owner == territory.owner:
+					if old_owner != territory.owner:
 						print(territory.name + ' switched control to ' + territory.owner.name + '.')
 
 		for nation in self.nations.values():
