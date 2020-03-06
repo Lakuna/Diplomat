@@ -191,7 +191,75 @@ class Map():
 		print('Set up map according to standard Diplomacy rules.')
 
 	def resolve_turn(self):
-		pass # TODO - Resolve convoy -> move -> support -> conflicts -> add/remove cities (Fall) -> add/remove units (Fall) -> switch season. Return all unit powers to 1. SET UNIT COUNT TO MAX BEFORE DOING TURN STUFF.
+		for nation in list(filter(lambda nation: nation.player_type == 'ai', self.nations.values())):
+			if len(nation.units) < nation.maximum_units(): # Build up to maximum units.
+				player_nation = active_nation
+				active_nation = nation
+				while len(nation.units) < nation.maximum_units():
+					command = ['new']
+					open_supply_centers = list(filter(lambda territory: territory.is_supply_center && len(territory.units) == 0, nation.territories))
+					if len(open_supply_centers) == 0:
+						break
+					territory = random.choice(open_supply_centers)
+					command.append(territory.name)
+					if territory.is_landlocked:
+						command.append('no')
+					else:
+						command.append(random.choice(['yes', 'no']))
+					commands[command[0]].action(command)
+				active_nation = player_nation
+
+			nation.automatic_turn() # Assign commands.
+
+		for nation in self.nations.values(): # Resolve all actions.
+			for unit in list(filter(lambda command: command[0] == 'convoy', nation.units)):
+				unit.resolve_action()
+			for unit in list(filter(lambda command: command[0] == 'move', nation.units)):
+				unit.resolve_action()
+			for unit in list(filter(lambda command: command[0] == 'support', nation.units)):
+				unit.resolve_action()
+
+		# TODO - Resolve conflicts.
+
+		for territory in self.territories.values():
+			if len(territory.units) > 1:
+				bounce_all = False
+				maximum_power = -1
+				for unit in territory.units:
+					if unit.power > maximum_power:
+						maximum_power = unit.power
+						bounce_all = False
+					elif unit.power == maximum_power:
+						bounce_all = True
+				if bounce_all:
+					for unit in territory.units:
+						unit.territory.units.remove(self)
+						if len(unit.last_territory.units) > 0:
+							unit.nation.units.remove(self)
+						else:
+							unit.territory = unit.last_territory
+							unit.territory.units.append(self)
+				else:
+					for unit in territory.units:
+						if unit.power == 0:
+							pass # TODO - Displace
+						elif unit.power < maximum_power:
+							unit.territory.units.remove(self)
+						if len(unit.last_territory.units) > 0:
+							unit.nation.units.remove(self)
+						else:
+							unit.territory = unit.last_territory
+							unit.territory.units.append(self)
+
+		# TODO - Set power back to 1.
+
+		if self.season == 'spring':
+			self.season == 'fall'
+		else:
+			self.season == 'spring'
+			for territory in self.territories.values():
+				if len(territory.units) > 0:
+					territory.owner = territory.units[0].owner
 
 class Territory():
 	def __init__(self, name, abbreviations, is_land, is_water, is_supply_center, adjacent_territory_names):
@@ -208,6 +276,7 @@ class Territory():
 		self.adjacent_territories = list(map(lambda territory_name: game_map.territories[territory_name], list(filter(lambda adjacent_territory_name: adjacent_territory_name in game_map.territories, self.adjacent_territory_names))))
 		self.adjacent_water = list(filter(lambda territory: territory.is_water, self.adjacent_territories))
 		self.adjacent_land = list(filter(lambda territory: territory.is_land, self.adjacent_territories))
+		self.is_landlocked = bool(len(self.adjacent_land))
 
 	def __str__(self):
 		return_string = 'Territory ' + self.name + '\nAbbreviations: ' + ''.join(list(map(lambda abbreviation: abbreviation + ', ', self.abbreviations)))
@@ -229,9 +298,6 @@ class Territory():
 			self.owner.territories.remove(self.name)
 		self.owner = player
 		self.owner.territories.append(self)
-
-	def is_landlocked(self):
-		return bool(len(list(filter(lambda adjacent_territory: adjacent_territory.is_water, self.adjacent_territories))))
 
 class Nation():
 	def __init__(self, name):
@@ -412,7 +478,7 @@ def new_command(query):
 					print(game_map.territories[query[1]].name + ' already has a unit.')
 				elif game_map.territories[query[1]] in active_nation.productive_territories:
 					if query[2] == 'yes':
-						if not game_map.territories[query[1]].is_landlocked():
+						if not game_map.territories[query[1]].is_landlocked:
 							Unit(True, active_nation, game_map.territories[query[1]])
 							print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
 						else:
@@ -670,30 +736,30 @@ print('Type \'help\' for a list of commands.')
 
 help_string = 'Type \'help\' for a list of commands.'
 setup_commands = {
-	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
-	'newmap': Command('NEWMAP\t\t\t\t\t\tStarts a new game with an empty map.', new_map_command),
-	'standardize': Command('STANDARDIZE\t\t\t\t\tSets up the map like a standard game of Diplomacy.', standardize_command),
-	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map.', view_command),
-	'new': Command('NEW (Territory) (Nation) (Is Navy YES/NO)\tAdds a unit to a territory.', new_command),
-	'destroy': Command('DESTROY (Name)\t\t\t\t\tDestroys a unit.', destroy_command),
+	'help': Command('HELP [Command name]\t\t\t\t\tGives information about commands.', help_command),
+	'newmap': Command('NEWMAP\t\t\t\t\t\t\tStarts a new game with an empty map.', new_map_command),
+	'standardize': Command('STANDARDIZE\t\t\t\t\t\tSets up the map like a standard game of Diplomacy.', standardize_command),
+	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\t\tGives information about a territory, nation, or unit, or the map.', view_command),
+	'new': Command('NEW (Territory) (Nation) (Is Navy YES/NO)\t\tAdds a unit to a territory.', new_command),
+	'destroy': Command('DESTROY (Name)\t\t\t\t\t\tDestroys a unit.', destroy_command),
 	'modify': Command('MODIFY (MAP/TERRITORY) (Name) (Parameter) (Value)\tModifies a specific parameter of the map, or a territory or unit.', modify_command),
-	'start': Command('START (Nation)\t\t\t\t\tStarts playing a game as the selected nation.', start_command),
-	'iterate': Command('ITERATE (Iterations) [Nation]\t\t\tAutomatically plays several games of Diplomacy from the current map state. Shows projections for selected nation.', iterate_command),
-	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
-	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
+	'start': Command('START (Nation)\t\t\t\t\t\tStarts playing a game as the selected nation.', start_command),
+	'iterate': Command('ITERATE (Iterations) [Nation]\t\t\t\tAutomatically plays several games of Diplomacy from the current map state. Shows projections for selected nation.', iterate_command),
+	'clear': Command('CLEAR\t\t\t\t\t\t\tClears the screen.', clear_command),
+	'exit': Command('EXIT\t\t\t\t\t\t\tExits the program.', lambda query: None)
 }
 game_commands = {
-	'help': Command('HELP [Command name]\t\t\t\tGives information about commands.', help_command),
-	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
-	'new': Command('NEW (Territory) (Is Navy YES/NO)\t\tAdds a unit to a territory.', new_command),
-	'destroy': Command('DESTROY (Name)\t\t\t\t\tDestroys a unit.', destroy_command),
-	'move': Command('MOVE (Starting territory) (Destination)\t\tMoves a unit from one territory to another.', move_command),
-	'convoy': Command('CONVOY (Unit) (Target territory)\t\tSets a naval unit as convoying.', convoy_command),
-	'support': Command('SUPPORT (Unit) (Target territory)\t\tSets a unit as supporting.', support_command),
-	'end': Command('END\t\t\t\t\t\tStops playing the current game.', end_command),
-	'resolve': Command('RESOLVE\t\t\t\t\t\tResolves the current turn.', resolve_command),
-	'clear': Command('CLEAR\t\t\t\t\t\tClears the screen.', clear_command),
-	'exit': Command('EXIT\t\t\t\t\t\tExits the program.', lambda query: None)
+	'help': Command('HELP [Command name]\t\t\t\t\tGives information about commands.', help_command),
+	'view': Command('VIEW (MAP/TERRITORY/NATION/UNIT) (Name)\t\t\tGives information about a territory, nation, or unit, or the map (leave name blank).', view_command),
+	'new': Command('NEW (Territory) (Is Navy YES/NO)\t\t\tAdds a unit to a territory.', new_command),
+	'destroy': Command('DESTROY (Name)\t\t\t\t\t\tDestroys a unit.', destroy_command),
+	'move': Command('MOVE (Starting territory) (Destination)\t\t\tMoves a unit from one territory to another.', move_command),
+	'convoy': Command('CONVOY (Unit) (Target territory)\t\t\tSets a naval unit as convoying.', convoy_command),
+	'support': Command('SUPPORT (Unit) (Target territory)\t\t\tSets a unit as supporting.', support_command),
+	'end': Command('END\t\t\t\t\t\t\tStops playing the current game.', end_command),
+	'resolve': Command('RESOLVE\t\t\t\t\t\t\tResolves the current turn.', resolve_command),
+	'clear': Command('CLEAR\t\t\t\t\t\t\tClears the screen.', clear_command),
+	'exit': Command('EXIT\t\t\t\t\t\t\tExits the program.', lambda query: None)
 }
 commands = setup_commands
 
