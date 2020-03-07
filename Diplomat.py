@@ -5,6 +5,8 @@ from os import system, name
 # TODO - Allow loading text files with lists of commands for bulk command entry. Can be useful for designing custom maps and such.
 # TODO - When iterating, make nations favor moves which had them win in the past.
 # TODO - Expand unit AI to take into account nearby enemy units as well.
+# TODO - Compile games into a Game class to more easily iterate many games.
+# TODO - Make methods return printed strings instead of printing them so that output can be controlled.
 
 class Map():
 	def __init__(self):
@@ -93,7 +95,7 @@ class Map():
 
 		self.nations = {
 			'italy': Nation('Italy'),
-			'austriahungary': Nation('Austria-Hungary'),
+			'austria': Nation('Austria'),
 			'russia': Nation('Russia'),
 			'turkey': Nation('Turkey'),
 			'england': Nation('England'),
@@ -106,7 +108,7 @@ class Map():
 		print('Created empty map.')
 
 	def __str__(self):
-		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '), ', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations))) + '\nSeason: ' + self.season
+		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '),\t', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations))) + '\nSeason: ' + self.season
 
 	def standard_setup(self):
 		self.territories['piedmont'].set_owner(self.nations['italy'])
@@ -121,16 +123,16 @@ class Map():
 		Unit(True, self.nations['italy'], self.territories['naples'])
 		self.nations['italy'].finalize_starting_territory()
 
-		self.territories['tyrolia'].set_owner(self.nations['austriahungary'])
-		self.territories['bohemia'].set_owner(self.nations['austriahungary'])
-		self.territories['galicia'].set_owner(self.nations['austriahungary'])
-		self.territories['vienna'].set_owner(self.nations['austriahungary'])
-		self.territories['trieste'].set_owner(self.nations['austriahungary'])
-		self.territories['budapest'].set_owner(self.nations['austriahungary'])
-		Unit(False, self.nations['austriahungary'], self.territories['vienna'])
-		Unit(False, self.nations['austriahungary'], self.territories['budapest'])
-		Unit(True, self.nations['austriahungary'], self.territories['trieste'])
-		self.nations['austriahungary'].finalize_starting_territory()
+		self.territories['tyrolia'].set_owner(self.nations['austria'])
+		self.territories['bohemia'].set_owner(self.nations['austria'])
+		self.territories['galicia'].set_owner(self.nations['austria'])
+		self.territories['vienna'].set_owner(self.nations['austria'])
+		self.territories['trieste'].set_owner(self.nations['austria'])
+		self.territories['budapest'].set_owner(self.nations['austria'])
+		Unit(False, self.nations['austria'], self.territories['vienna'])
+		Unit(False, self.nations['austria'], self.territories['budapest'])
+		Unit(True, self.nations['austria'], self.territories['trieste'])
+		self.nations['austria'].finalize_starting_territory()
 
 		self.territories['finland'].set_owner(self.nations['russia'])
 		self.territories['saintpetersburg'].set_owner(self.nations['russia'])
@@ -197,14 +199,14 @@ class Map():
 
 		for nation in list(filter(lambda nation: nation.player_type == 'ai', self.nations.values())):
 			if len(nation.units) < nation.maximum_units(): # Build up to maximum units.
-				print(nation.name + ' building up to maximum units.')
+				# print(nation.name + ' building up to maximum units.')
 				player_nation = active_nation
 				active_nation = nation
 				while len(nation.units) < nation.maximum_units():
 					command = ['new']
 					open_supply_centers = list(filter(lambda territory: territory.is_supply_center and len(territory.units) == 0 and territory.owner == nation, nation.productive_territories))
 					if len(open_supply_centers) == 0:
-						print(nation.name + ' cannot make more units because it has no open supply centers.')
+						# print(nation.name + ' cannot make more units because it has no open supply centers.')
 						break
 					else:
 						territory = random.choice(open_supply_centers)
@@ -218,7 +220,7 @@ class Map():
 
 		for nation in list(filter(lambda nation: nation.player_type == 'ai', self.nations.values())):
 			if len(nation.units) > nation.maximum_units(): # Cut down to maximum units.
-				print(nation.name + ' cutting down to maximum units.')
+				# print(nation.name + ' cutting down to maximum units.')
 				player_nation = active_nation
 				active_nation = nation
 				while len(nation.units) > nation.maximum_units():
@@ -231,15 +233,19 @@ class Map():
 		for nation in list(filter(lambda nation: nation.player_type == 'ai', self.nations.values())):
 			nation.automatic_turn() # Assign commands.
 
-		for nation in self.nations.values(): # Resolve all actions.
-			for unit in list(filter(lambda unit: unit.action == 'convoy', nation.units)):
-				unit.resolve_action()
-			for unit in list(filter(lambda unit: unit.action == 'move', nation.units)):
-				unit.resolve_action()
-			for unit in list(filter(lambda unit: unit.action == 'support', nation.units)):
-				unit.resolve_action()
-			for unit in list(filter(lambda unit: unit.action == 'hold', nation.units)):
-				unit.resolve_action()
+		output_dictionary = {}
+		all_units = []
+		for nation in self.nations.values():
+			for unit in nation.units:
+				all_units.append(unit)
+		for unit in list(filter(lambda unit: unit.action == 'convoy', all_units)):
+			output_dictionary[unit.old_identifier] = unit.resolve_action()
+		for unit in list(filter(lambda unit: unit.action == 'move', all_units)):
+			output_dictionary[unit.old_identifier] = unit.resolve_action()
+		for unit in list(filter(lambda unit: unit.action == 'support', all_units)):
+			output_dictionary[unit.old_identifier] = unit.resolve_action()
+		for unit in list(filter(lambda unit: unit.action == 'hold', all_units)):
+			output_dictionary[unit.old_identifier] = unit.resolve_action()
 
 		for territory in self.territories.values():
 			if len(territory.units) > 1:
@@ -298,13 +304,13 @@ class Map():
 					territory.owner = territory.units[0].owner
 					territory.owner.territories.append(territory)
 					if old_owner != territory.owner:
-						print(territory.name + ' switched control to ' + territory.owner.name + '.')
+						pass # print(territory.name + ' switched control to ' + territory.owner.name + '.')
 
 		for nation in self.nations.values():
 			if len(nation.territories) >= 20:
 				global current_game_placements
 				current_game_placements = {}
-				temp_nations = self.nations.values()
+				temp_nations = list(self.nations.values())
 				place = 1
 				while len(temp_nations) > 0:
 					most_supply_centers = 0
@@ -317,7 +323,9 @@ class Map():
 							temp_nations.remove(nation)
 							place = place + 1
 				break
-		print('Finished turn.')
+
+		# print('Finished turn.')
+		return output_dictionary # For getting turn moves in iteration.
 
 class Territory():
 	def __init__(self, name, abbreviations, is_land, is_water, is_supply_center, adjacent_territory_names):
@@ -439,7 +447,7 @@ class Unit():
 			self.territory.units.remove(self)
 			self.territory = self.action_target
 			self.territory.units.append(self)
-			print(self.old_identifier + ' -> ' + self.territory.abbreviations[0])
+			output_string = self.old_identifier + ' -> ' + self.territory.abbreviations[0]
 		elif self.action == 'support':
 			self.power = self.power - 1
 			if len(self.action_target.units) > 0:
@@ -447,23 +455,24 @@ class Unit():
 					if unit.owner == self.owner:
 						unit.power = unit.power + 1
 						if unit.action == 'move':
-							print(self.old_identifier + ' -S- ' + unit.old_identifier + ' -> ' + unit.action_target.abbreviations[0])
+							output_string = self.old_identifier + ' -S- ' + unit.old_identifier + ' -> ' + unit.action_target.abbreviations[0]
 						else:
-							print(self.old_identifier + ' -S- ' + unit.old_identifier + ' HOLD')
+							output_string = self.old_identifier + ' -S- ' + unit.old_identifier + ' HOLD'
 			else:
-				print(self.old_identifier + ' HOLD (illegal support).')
+				output_string = self.old_identifier + ' HOLD (illegal support).'
 		elif self.action == 'convoy':
 			self.power = self.power - 1
 			if self.action_target.action == 'move':
-				print(self.old_identifier + ' -C- ' + self.action_target.old_identifier + ' -> ' + self.action_target.action_target.abbreviations[0])
+				output_string = self.old_identifier + ' -C- ' + self.action_target.old_identifier + ' -> ' + self.action_target.action_target.abbreviations[0]
 			else:
-				print(self.old_identifier + ' HOLD (illegal convoy).')
+				output_string = self.old_identifier + ' HOLD (illegal convoy).'
 			# Convoy applied as command is given to allow move to work correctly.
 		else:
-			print(self.identifier() + ' HOLD')
+			output_string = self.identifier() + ' HOLD'
 		self.action = 'hold'
 		self.action_target = None
 		self.convoys = []
+		return output_string
 
 	def available_movement_targets(self):
 		if self.is_navy:
@@ -547,12 +556,12 @@ def new_command(query):
 						if query[2] == 'yes':
 							if not game_map.territories[query[1]].is_landlocked:
 								Unit(True, active_nation, game_map.territories[query[1]])
-								print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
+								# print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
 							else:
 								print('Navies must be placed on a coast.')
 						elif query[2] == 'no':
 							Unit(False, active_nation, game_map.territories[query[1]])
-							print('Created new Army on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
+							# print('Created new Army on ' + game_map.territories[query[1]].name + ' for ' + active_nation.name + '.')
 						else:
 							print(commands['new'].help_string)
 					else:
@@ -641,7 +650,7 @@ def destroy_command(query):
 				if unit.owner == active_nation:
 					unit.territory.units.remove(unit)
 					unit.owner.units.remove(unit)
-					print('Destroyed ' + unit.identifier())
+					# print('Destroyed ' + unit.identifier())
 		else:
 			print('Unknown territory \'' + query[1] + '\'.')
 	else:
@@ -676,7 +685,7 @@ def move_command(query):
 					if not successful:
 						print('No units were moved. You didn\'t control a unit on the specified territory, or the specified target was out of range.')
 				else:
-					print('No units in ' + game_map.territories[query[1]].name + '.')
+					pass # print('No units in ' + game_map.territories[query[1]].name + '.')
 			else:
 				print('Unknown territory \'' + query[2] + '\'.')
 		else:
@@ -720,50 +729,79 @@ def start_command(query):
 			print('Unknown nation \'' + query[1] + '\'.')
 
 def iterate_command(query):
+	global game_map
+	global in_game
+	global commands
+	global current_game_placements
+
 	if game_map == None:
 		print('There is no map.')
 		return
 
-	if len(query) < 2:
-		print(commands[query[0]].help_string)
-	else:
-		placement_results = {}
-		fastest_win_turns = {}
-		total_win_turns = {}
-		total_wins = {}
-		for nation in game_map.nations.values():
-			placement_results[nation] = 0
-			fastest_win_turns[nation] = 1000
-			total_win_turns[nation] = 0
-			total_wins[nation] = 0
+	iterate_games = 10
+	commands = game_commands
+	in_game = True
 
-		selected_nation = None
-		best_first_moves = {}
-		best_ally = None # TODO - Best ally calculation.
-		if len(query) > 2:
-			if query[2] in game_map.nations:
-				selected_nation = game_map.nations[query[2]]
+	placement_results = {}
+	fastest_win_turns = {}
+	total_win_turns = {}
+	total_wins = {}
+	for nation in game_map.nations.values():
+		placement_results[nation] = 0
+		fastest_win_turns[nation] = 1000
+		total_win_turns[nation] = 0
+		total_wins[nation] = 0
+
+	selected_nation = None
+	best_first_moves = {}
+	best_ally = None # TODO - Best ally calculation.
+	if len(query) > 1:
+		if query[1] in game_map.nations:
+			selected_nation = game_map.nations[query[1]]
+		else:
+			print('Unknown nation \'' + query[1] + '\'.')
+
+	starting_map = game_map
+
+	for i in range(0, iterate_games):
+		current_game_placements = None
+		game_map = starting_map
+		turns = 0
+		turn_one_actions = []
+		while current_game_placements == None:
+			turns = turns + 1
+			turn_actions = game_map.resolve_turn() # Play game.
+			if turns == 1 and selected_nation != None:
 				for unit in selected_nation.units:
-					best_first_moves[unit] = unit.action
-			else:
-				print('Unknown nation \'' + query[2] + '\'.')
+					turn_one_actions.append(turn_actions[unit.old_identifier]) # Save first moves.
+		for nation in game_map.nations.values():
+			placement_results[nation] = placement_results[nation] + current_game_placements[nation]
+			if placement_results[nation] == 1:
+				total_win_turns[nation] = total_win_turns[nation] + turns
+				total_wins[nation] = total_wins[nation] + 1
+				if turns < fastest_win_turns[nation]:
+					fastest_win_turns[nation] = turns
+		if placement_results[selected_nation] == 1:
+			for action in turn_one_actions:
+				if action in best_first_moves:
+					best_first_moves[action] = best_first_moves[action] + 1
+				else:
+					best_first_moves[action] = 1
+		# print('Game ' + str(i) + ' complete.')
 
-		starting_map = game_map
+	if selected_nation != None:
+		print('Iteration complete for nation ' + selected_nation.name + '.\nRecommended next moves:')
+		for move in best_first_moves:
+			print(move + '\t\tWinrate: ' + str(best_first_moves[move] / iterate_games))
+	print('\nNations by win from current map state:')
+	for nation in game_map.nations.values():
+		win_turn_string = 'No wins.'
+		if total_wins[nation] > 0:
+			win_turn_string = str(total_win_turns[nation] / total_wins[nation])
+		print(nation.name + '\t\tAverage placement: ' + str(placement_results[nation] / iterate_games) + '\tFastest win: ' + str(fastest_win_turns[nation]) + ' turns\tAverage win turn: ' + win_turn_string + '\tWinrate: ' + str(total_wins[nation] / iterate_games))
 
-		for i in range(0, int(query[1])):
-			game_map = starting_map
-			turns = 0
-			while current_game_placements == None:
-				game_map.resolve_turn() # Play game.
-			for nation in game_map.nations.values():
-				placement_results[nation] = placement_results[nation] + current_game_placements[nation]
-				if placement_results[nation] == 1:
-					total_win_turns[nation] = total_win_turns[nation] + turns
-					total_wins[nation] = total_wins[nation] + 1
-					if turns < fastest_win_turns[nation]:
-						fastest_win_turns[nation] = turns
-				if nation == selected_nation:
-					pass # TODO - Calculate best turn 1 moves for selected nation.
+	commands = setup_commands
+	in_game = False
 
 def clear_command(query):
 	if name == 'nt':
@@ -793,11 +831,11 @@ def convoy_command(query):
 					if not successful:
 						print('No units were convoyed. You didn\'t control a unit on one or both of the specified territories.')
 				else:
-					print('No units in ' + game_map.territories[query[2]].name + '.')
+					pass # print('No units in ' + game_map.territories[query[2]].name + '.')
 			else:
-				print('No units in ' + game_map.territories[query[1]].name + '.')
+				pass # print('No units in ' + game_map.territories[query[1]].name + '.')
 		else:
-			print('Could not find territory \'' + query[2] + '\' adjacent to ' + game_map.territories[query[1]].name + '.')
+			pass # print('Could not find territory \'' + query[2] + '\' adjacent to ' + game_map.territories[query[1]].name + '.')
 	else:
 		print('Unknown territory \'' + query[1] + '\'.')
 
@@ -816,9 +854,9 @@ def support_command(query):
 						unit.action = 'support'
 						unit.action_target = game_map.territories[query[2]]
 				else:
-					print('No units in ' + game_map.territories[query[2]].name + '.')
+					pass # print('No units in ' + game_map.territories[query[2]].name + '.')
 			else:
-				print('No units in ' + game_map.territories[query[1]].name + '.')
+				pass # print('No units in ' + game_map.territories[query[1]].name + '.')
 		else:
 			print('Unknown territory \'' + query[2] + '\'.')
 	else:
@@ -853,7 +891,7 @@ setup_commands = {
 	'destroy': Command('DESTROY (Name)\t\t\t\t\t\tDestroys a unit.', destroy_command),
 	'modify': Command('MODIFY (MAP/TERRITORY) (Name) (Parameter) (Value)\tModifies a specific parameter of the map, or a territory or unit.', modify_command),
 	'start': Command('START (Nation)\t\t\t\t\t\tStarts playing a game as the selected nation.', start_command),
-	'iterate': Command('ITERATE (Iterations) [Nation]\t\t\t\tAutomatically plays several games of Diplomacy from the current map state. Shows projections for selected nation.', iterate_command),
+	'iterate': Command('ITERATE [Nation]\t\t\t\t\t\tAutomatically plays several games of Diplomacy from the current map state. Shows projections for selected nation.', iterate_command),
 	'clear': Command('CLEAR\t\t\t\t\t\t\tClears the screen.', clear_command),
 	'exit': Command('EXIT\t\t\t\t\t\t\tExits the program.', lambda query: None)
 }
