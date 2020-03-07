@@ -581,10 +581,10 @@ def new_command(query):
 				elif query[2] in game_map.nations:
 					if query[3] == 'yes':
 						Unit(True, game_map.nations[query[2]], game_map.territories[query[1]])
-						print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + game_map.nations[query[2]].name + '.')
+						# print('Created new Navy on ' + game_map.territories[query[1]].name + ' for ' + game_map.nations[query[2]].name + '.')
 					elif query[3] == 'no':
 						Unit(False, game_map.nations[query[2]], game_map.territories[query[1]])
-						print('Created new Army on ' + game_map.territories[query[1]].name + ' for ' + game_map.nations[query[2]].name + '.')
+						# print('Created new Army on ' + game_map.territories[query[1]].name + ' for ' + game_map.nations[query[2]].name + '.')
 					else:
 						print(commands['new'].help_string)
 				else:
@@ -603,10 +603,10 @@ def modify_command(query):
 		if query[3] == 'season':
 			if query[4] == 'spring':
 				game_map.season = 'spring'
-				print('Set season to Spring.')
+				# print('Set season to Spring.')
 			elif query[4] == 'fall':
 				game_map.season = 'fall'
-				print('Set season to Fall.')
+				# print('Set season to Fall.')
 			else:
 				print('Available options: SPRING/FALL')
 		else:
@@ -616,17 +616,17 @@ def modify_command(query):
 			if query[3] == 'supplycenter':
 				if query[4] == 'yes':
 					game_map.territories[query[2]].is_supply_center = True
-					print('Set ' + game_map.territories[query[2]].name + ' to be a supply center.')
+					# print('Set ' + game_map.territories[query[2]].name + ' to be a supply center.')
 				elif query[4] == 'no':
 					game_map.territories[query[2]].is_supply_center = False
-					print('Set ' + game_map.territories[query[2]].name + ' to not be a supply center.')
+					# print('Set ' + game_map.territories[query[2]].name + ' to not be a supply center.')
 				else:
 					print('Available options: YES/NO')
 			elif query[3] == 'owner':
 				if query[4] in game_map.nations:
 					game_map.territories[query[3]].owner.territories.remove(game_map.territories[query[3]])
 					game_map.territories[query[3]].owner = game_map.nations[query[4]]
-					print('Set owner of ' + game_map.territories[query[3]].name + ' to ' + game_map.nations[query[4]] + '.')
+					# print('Set owner of ' + game_map.territories[query[3]].name + ' to ' + game_map.nations[query[4]] + '.')
 				else:
 					print('Unknown nation \'' + query[4] + '\'.')
 			else:
@@ -661,7 +661,7 @@ def destroy_command(query):
 			for unit in game_map.territories[query[1]].units:
 				unit.territory.units.remove(unit)
 				unit.owner.units.remove(unit)
-				print('Destroyed ' + unit.identifier())
+				# print('Destroyed ' + unit.identifier())
 		else:
 			print('Unknown territory \'' + query[1] + '\'.')
 
@@ -752,31 +752,34 @@ def iterate_command(query):
 		total_wins[nation.name] = 0
 
 	selected_nation = None
+	turn_one_identifiers = []
 	best_first_moves = {}
 	best_ally = None # TODO - Best ally calculation.
 	if len(query) > 1:
 		if query[1] in game_map.nations:
 			selected_nation = game_map.nations[query[1]].name
+			for unit in game_map.nations[selected_nation.lower()].units:
+				turn_one_identifiers.append(unit.identifier())
 		else:
 			print('Unknown nation \'' + query[1] + '\'.')
 
 	for i in range(0, iterate_games):
 		for command in commands_since_last_newmap:
-			commands[command[0]].action(command)
+			commands[command[0]].action(command) # Set up map to start.
 		
 		in_game = True
 		commands = game_commands
 
 		current_game_placements = None
 		turns = 0
-		turn_one_actions = []
+		turn_one_actions = {}
 
 		while current_game_placements == None:
 			turns = turns + 1
 			turn_actions = game_map.resolve_turn() # Play game.
 			if turns == 1 and selected_nation != None:
-				for unit in game_map.nations[selected_nation.lower()].units:
-					turn_one_actions.append(turn_actions[unit.old_identifier]) # Save first moves.
+				for identifier in turn_one_identifiers:
+					turn_one_actions[identifier] = turn_actions[identifier] # Save first moves.
 		for nation in game_map.nations.values():
 			placement_results[nation.name] = placement_results[nation.name] + current_game_placements[nation]
 			if current_game_placements[nation] == 1:
@@ -785,8 +788,8 @@ def iterate_command(query):
 				if turns < fastest_win_turns[nation.name]:
 					fastest_win_turns[nation.name] = turns
 		if selected_nation != None:
-			if placement_results[selected_nation] == 1:
-				for action in turn_one_actions:
+			if current_game_placements[game_map.nations[selected_nation.lower()]] == 1: # Only show moves that lead to a winning game.
+				for action in turn_one_actions.values():
 					if action in best_first_moves:
 						best_first_moves[action] = best_first_moves[action] + 1 # TODO - Fix.
 					else:
@@ -808,6 +811,9 @@ def iterate_command(query):
 		if total_wins[nation.name] > 0:
 			win_turn_string = str(total_win_turns[nation.name] / total_wins[nation.name])
 		print(nation.name + '\t\tAverage placement: ' + str(placement_results[nation.name] / iterate_games) + '\tFastest win: ' + str(fastest_win_turns[nation.name]) + ' turns\tAverage win turn: ' + win_turn_string + '\tWinrate: ' + str(total_wins[nation.name] / iterate_games))
+
+	for command in commands_since_last_newmap:
+			commands[command[0]].action(command) # Reset map to start.
 
 # Credit to Benjamin Cordier.
 def print_progress_bar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
