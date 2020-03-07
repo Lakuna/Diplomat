@@ -1,4 +1,5 @@
 import random
+import copy
 from os import system, name
 # TODO - Reduce nesting throughout program by inverting if statements. In commands, get each part of the query as the thing it represents before moving on to logic.
 # TODO - Move all action logic to resolution step. Simply hold if it's an illegal command.
@@ -105,7 +106,7 @@ class Map():
 
 		self.season = 'spring'
 
-		print('Created empty map.')
+		# print('Created empty map.')
 
 	def __str__(self):
 		return 'Territories and abbreviations: ' + ''.join(list(map(lambda territory: territory + ' (' + self.territories[territory].name + '),\t', self.territories))) + '\nNations: ' + ''.join(list(map(lambda nation: nation + ', ', self.nations))) + '\nSeason: ' + self.season
@@ -192,7 +193,7 @@ class Map():
 		Unit(True, self.nations['germany'], self.territories['kiel'])
 		self.nations['germany'].finalize_starting_territory()
 
-		print('Set up map according to standard Diplomacy rules.')
+		# print('Set up map according to standard Diplomacy rules.')
 
 	def resolve_turn(self):
 		global active_nation
@@ -738,79 +739,84 @@ def iterate_command(query):
 		print('There is no map.')
 		return
 
-	iterate_games = 10
-	commands = game_commands
-	in_game = True
+	iterate_games = 1000
 
 	placement_results = {}
 	fastest_win_turns = {}
 	total_win_turns = {}
 	total_wins = {}
 	for nation in game_map.nations.values():
-		placement_results[nation] = 0
-		fastest_win_turns[nation] = 1000
-		total_win_turns[nation] = 0
-		total_wins[nation] = 0
+		placement_results[nation.name] = 0
+		fastest_win_turns[nation.name] = 9999
+		total_win_turns[nation.name] = 0
+		total_wins[nation.name] = 0
 
 	selected_nation = None
 	best_first_moves = {}
 	best_ally = None # TODO - Best ally calculation.
 	if len(query) > 1:
 		if query[1] in game_map.nations:
-			selected_nation = game_map.nations[query[1]]
+			selected_nation = game_map.nations[query[1]].name
 		else:
 			print('Unknown nation \'' + query[1] + '\'.')
 
-	starting_nations = game_map.nations
-
 	for i in range(0, iterate_games):
+		for command in commands_since_last_newmap:
+			commands[command[0]].action(command)
+		
+		in_game = True
+		commands = game_commands
+
 		current_game_placements = None
 		turns = 0
 		turn_one_actions = []
-
-		# TODO - Make sure this new map reset thing is working.
-		game_map = Map()
-		for nation in starting_nations:
-			game_nation = game_map.nations[nation.name.lower()]
-			for unit in nation.units
-				game_nation.units.append(Unit(unit.is_navy, unit.nation, unit.territory.abbreviations[0]))
-			for territory in nation.territories:
-				game_nation.territories[territory.abbreviations[0]] = Territory(territory.name, territory.abbreviations, territory.is_land, territory.is_water, territory.is_supply_center, territory.adjacent_territory_names)
 
 		while current_game_placements == None:
 			turns = turns + 1
 			turn_actions = game_map.resolve_turn() # Play game.
 			if turns == 1 and selected_nation != None:
-				for unit in selected_nation.units:
+				for unit in game_map.nations[selected_nation.lower()].units:
 					turn_one_actions.append(turn_actions[unit.old_identifier]) # Save first moves.
 		for nation in game_map.nations.values():
-			placement_results[nation] = placement_results[nation] + current_game_placements[nation]
-			if placement_results[nation] == 1:
-				total_win_turns[nation] = total_win_turns[nation] + turns
-				total_wins[nation] = total_wins[nation] + 1
-				if turns < fastest_win_turns[nation]:
-					fastest_win_turns[nation] = turns
-		if placement_results[selected_nation] == 1:
-			for action in turn_one_actions:
-				if action in best_first_moves:
-					best_first_moves[action] = best_first_moves[action] + 1
-				else:
-					best_first_moves[action] = 1
+			placement_results[nation.name] = placement_results[nation.name] + current_game_placements[nation]
+			if current_game_placements[nation] == 1:
+				total_win_turns[nation.name] = total_win_turns[nation.name] + turns
+				total_wins[nation.name] = total_wins[nation.name] + 1
+				if turns < fastest_win_turns[nation.name]:
+					fastest_win_turns[nation.name] = turns
+		if selected_nation != None:
+			if placement_results[selected_nation] == 1:
+				for action in turn_one_actions:
+					if action in best_first_moves:
+						best_first_moves[action] = best_first_moves[action] + 1 # TODO - Fix.
+					else:
+						best_first_moves[action] = 1
+		print_progress_bar(i + 1, iterate_games, prefix='Simulation:', suffix='Complete', length=50)
+
+		in_game = False
+		commands = setup_commands
+
 		# print('Game ' + str(i) + ' complete.')
 
 	if selected_nation != None:
-		print('Iteration complete for nation ' + selected_nation.name + '.\nRecommended next moves:')
+		print('Iteration complete for nation ' + selected_nation + '.\nRecommended next moves:')
 		for move in best_first_moves:
 			print(move + '\t\tWinrate: ' + str(best_first_moves[move] / iterate_games))
 	print('\nNations by win from current map state:')
 	for nation in game_map.nations.values():
-		win_turn_string = 'No wins.'
-		if total_wins[nation] > 0:
-			win_turn_string = str(total_win_turns[nation] / total_wins[nation])
-		print(nation.name + '\t\tAverage placement: ' + str(placement_results[nation] / iterate_games) + '\tFastest win: ' + str(fastest_win_turns[nation]) + ' turns\tAverage win turn: ' + win_turn_string + '\tWinrate: ' + str(total_wins[nation] / iterate_games))
+		win_turn_string = 'N/A'
+		if total_wins[nation.name] > 0:
+			win_turn_string = str(total_win_turns[nation.name] / total_wins[nation.name])
+		print(nation.name + '\t\tAverage placement: ' + str(placement_results[nation.name] / iterate_games) + '\tFastest win: ' + str(fastest_win_turns[nation.name]) + ' turns\tAverage win turn: ' + win_turn_string + '\tWinrate: ' + str(total_wins[nation.name] / iterate_games))
 
-	commands = setup_commands
-	in_game = False
+# Credit to Benjamin Cordier.
+def print_progress_bar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+	percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+	filledLength = int(length * iteration // total)
+	bar = fill * filledLength + '-' * (length - filledLength)
+	print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+	if iteration == total: 
+		print()
 
 def clear_command(query):
 	if name == 'nt':
@@ -923,6 +929,7 @@ in_game = False
 active_nation = None
 current_game_placements = None
 game_map = None
+commands_since_last_newmap = []
 
 command = [None]
 while command[0] != 'exit':
@@ -932,6 +939,13 @@ while command[0] != 'exit':
 		print(help_string)
 		command = [None] # So that the loop doesn't throw an error.
 	elif command[0] in commands:
+		# Save commands since last newmap for recreation when iterating.
+		if command[0] == 'newmap':
+			commands_since_last_newmap = [command]
+		elif command[0] == 'standardize' or command[0] == 'new' or command[0] == 'destroy' or command[0] == 'modify':
+			commands_since_last_newmap.append(command)
+
+		# Execute command.
 		commands[command[0]].action(command)
 	else:
 		print(help_string)
