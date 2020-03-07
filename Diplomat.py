@@ -761,13 +761,22 @@ def iterate_command(query):
 		else:
 			print('Unknown nation \'' + query[1] + '\'.')
 
-	starting_map = game_map
+	starting_nations = game_map.nations
 
 	for i in range(0, iterate_games):
 		current_game_placements = None
-		game_map = starting_map
 		turns = 0
 		turn_one_actions = []
+
+		# TODO - Make sure this new map reset thing is working.
+		game_map = Map()
+		for nation in starting_nations:
+			game_nation = game_map.nations[nation.name.lower()]
+			for unit in nation.units
+				game_nation.units.append(Unit(unit.is_navy, unit.nation, unit.territory.abbreviations[0]))
+			for territory in nation.territories:
+				game_nation.territories[territory.abbreviations[0]] = Territory(territory.name, territory.abbreviations, territory.is_land, territory.is_water, territory.is_supply_center, territory.adjacent_territory_names)
+
 		while current_game_placements == None:
 			turns = turns + 1
 			turn_actions = game_map.resolve_turn() # Play game.
