@@ -1,13 +1,6 @@
 import random
 import copy
 from os import system, name
-# TODO - Reduce nesting throughout program by inverting if statements. In commands, get each part of the query as the thing it represents before moving on to logic.
-# TODO - Move all action logic to resolution step. Simply hold if it's an illegal command.
-# TODO - Allow loading text files with lists of commands for bulk command entry. Can be useful for designing custom maps and such.
-# TODO - When iterating, make nations favor moves which had them win in the past.
-# TODO - Expand unit AI to take into account nearby enemy units as well.
-# TODO - Compile games into a Game class to more easily iterate many games.
-# TODO - Make methods return printed strings instead of printing them so that output can be controlled.
 
 class Map():
 	def __init__(self):
@@ -513,7 +506,7 @@ def view_command(query):
 	if len(query) < 2:
 		print(commands['view'].help_string)
 	elif query[1] == 'map':
-		print(game_map) # TODO - Show image representation of map on view map.
+		print(game_map)
 	elif len(query) < 3:
 		print(commands['view'].help_string)
 	elif query[1] == 'territory':
@@ -754,7 +747,7 @@ def iterate_command(query):
 	selected_nation = None
 	turn_one_identifiers = []
 	best_first_moves = {}
-	best_ally = None # TODO - Best ally calculation.
+	best_ally = None
 	if len(query) > 1:
 		if query[1] in game_map.nations:
 			selected_nation = game_map.nations[query[1]].name
@@ -791,7 +784,7 @@ def iterate_command(query):
 			if current_game_placements[game_map.nations[selected_nation.lower()]] == 1: # Only show moves that lead to a winning game.
 				for action in turn_one_actions.values():
 					if action in best_first_moves:
-						best_first_moves[action] = best_first_moves[action] + 1 # TODO - Fix.
+						best_first_moves[action] = best_first_moves[action] + 1
 					else:
 						best_first_moves[action] = 1
 		print_progress_bar(i + 1, iterate_games, prefix='Simulation:', suffix='Complete', length=50)
