@@ -617,9 +617,11 @@ def modify_command(query):
 					print('Available options: YES/NO')
 			elif query[3] == 'owner':
 				if query[4] in game_map.nations:
-					game_map.territories[query[3]].owner.territories.remove(game_map.territories[query[3]])
-					game_map.territories[query[3]].owner = game_map.nations[query[4]]
-					# print('Set owner of ' + game_map.territories[query[3]].name + ' to ' + game_map.nations[query[4]] + '.')
+					if game_map.territories[query[2]].owner != None:
+						game_map.territories[query[2]].owner.territories.remove(game_map.territories[query[2]])
+					game_map.territories[query[2]].owner = game_map.nations[query[4]]
+					game_map.territories[query[2]].owner.territories.append(game_map.territories[query[2]])
+					# print('Set owner of ' + game_map.territories[query[2]].name + ' to ' + game_map.nations[query[4]] + '.')
 				else:
 					print('Unknown nation \'' + query[4] + '\'.')
 			else:
