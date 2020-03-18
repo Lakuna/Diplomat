@@ -27,7 +27,7 @@ class Map():
 			'paris': Territory('Paris', ['par'], True, False, True, ['bre', 'pic', 'bur', 'gas']),
 			'portugal': Territory('Portugal', ['por'], True, False, True, ['mao', 'spa']),
 			'rome': Territory('Rome', ['rom'], True, False, True, ['tus', 'ven', 'apu', 'nap', 'tyr']),
-			'rumania': Territory('Rumania', ['ruh'], True, False, True, ['bud', 'sev', 'bla', 'bul', 'ser', 'gal', 'ukr']),
+			'rumania': Territory('Rumania', ['rum'], True, False, True, ['bud', 'sev', 'bla', 'bul', 'ser', 'gal', 'ukr']),
 			'saintpetersburg': Territory('Saint Petersburg', ['stp', 'stpetersburg'], True, False, True, ['bot', 'fin', 'nar', 'bar', 'mos', 'liv']),
 			'serbia': Territory('Serbia', ['ser'], True, False, True, ['alb', 'tri', 'bud', 'rum', 'bul', 'gre']),
 			'sevastopol': Territory('Sevastopol', ['sev'], True, False, True, ['ukr', 'mos', 'arm', 'bla', 'rum']),
