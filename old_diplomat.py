@@ -774,7 +774,8 @@ def iterate_command(query):
 			turn_actions = game_map.resolve_turn() # Play game.
 			if turns == 1 and selected_nation != None:
 				for identifier in turn_one_identifiers:
-					turn_one_actions[identifier] = turn_actions[identifier] # Save first moves.
+					if identifier in turn_actions: # If the piece never won, it won't be in turn_actions.
+						turn_one_actions[identifier] = turn_actions[identifier] # Save first moves.
 		for nation in game_map.nations.values():
 			placement_results[nation.name] = placement_results[nation.name] + current_game_placements[nation]
 			if current_game_placements[nation] == 1:
