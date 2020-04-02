@@ -48,7 +48,7 @@ while command_name != 'exit':
 	# Get user input.
 	query = list(map(lambda word: ''.join(list([character for character in word if character.isalpha() or character.isdigit()])).lower(), input('\n>').split()))
 	if len(query) == 0:
-		query = [''] # So that the loop doesn't throw an error if the query was empty.
+		print(help_string)
 		continue
 
 	# Get command.

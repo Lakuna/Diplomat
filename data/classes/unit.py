@@ -4,7 +4,7 @@ from data.classes.territory import Territory, WaterTerritory, LandTerritory, Hyb
 
 class Unit(DiplomatLoadable):
 	def __init__(self, board, identifier, owner_identifier, location_identifier):
-		super().__init__(board, identifier)
+		super().__init__(board, identifier, [identifier])
 
 		self.board.units.append(self)
 
@@ -25,11 +25,7 @@ class Unit(DiplomatLoadable):
 		self.location = None
 		self.old_location = None
 
-		self.name = None
 		self.old_name = None
-
-	def __str__(self):
-		return self.name
 
 	def set_location(self, location):
 		if not isinstance(location, Territory):
@@ -54,6 +50,9 @@ class Unit(DiplomatLoadable):
 			self.owner.territories.remove(self)
 		self.owner = owner
 		self.owner.territories.append(self)
+
+	def view_string(self):
+		return str(self) + ': ' + str(self.names) + '\nOwner: ' + str(self.owner) + '\nLocation: ' + str(self.location)
 
 	def init_relationships(self):
 		super().init_relationships()

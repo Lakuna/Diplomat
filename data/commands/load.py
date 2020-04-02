@@ -1,6 +1,5 @@
 import __main__
 import os.path
-from glob import glob
 
 name = 'load'
 usage = 'LOAD (Map name)'

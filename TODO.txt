@@ -1,7 +1,2 @@
-other commands
-allow VIEW to work by map loadables id
-viewable parent class for VIEW command with view_string or something
-map seasons
-finish NEW command (non-map parts)
 import other commands.
 turn logic

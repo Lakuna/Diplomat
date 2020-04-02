@@ -3,17 +3,10 @@ from data.classes.nation import Nation
 
 class Territory(DiplomatLoadable):
 	def __init__(self, board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center):
-		super().__init__(board, identifier)
+		super().__init__(board, identifier, names)
 
 		self.board.places.append(self)
 
-		if not isinstance(names, list):
-			raise TypeError('names must be a list.')
-		for name in names:
-			if not isinstance(name, str):
-				raise TypeError('names must contain only strings.')
-		if len(names) < 1:
-			raise IndexError('names must contain at least one string.')
 		if not isinstance(owner_identifier, str):
 			raise TypeError('owner_identifier must be a string.')
 		if not isinstance(adjacent_territory_identifiers, list):
@@ -25,9 +18,6 @@ class Territory(DiplomatLoadable):
 			raise IndexError('adjacent_territory_identifiers must contain at least one string.')
 		if not isinstance(is_supply_center, bool):
 			raise TypeError('is_supply_center must be a boolean.')
-
-		self.names = names
-		self.name = self.names[0]
 
 		self.owner_identifier = owner_identifier
 		self.owner = None
@@ -41,9 +31,6 @@ class Territory(DiplomatLoadable):
 
 		self.units = []
 
-	def __str__(self):
-		return self.name
-
 	def set_owner(self, owner):
 		if not isinstance(owner, Nation):
 			raise TypeError('owner must be a Nation.')
@@ -52,6 +39,18 @@ class Territory(DiplomatLoadable):
 			self.owner.territories.remove(self)
 		self.owner = owner
 		self.owner.territories.append(self)
+
+	def view_string(self):
+		return_string = str(self) + ': ' + str(self.names) + '\nOwner: ' + str(self.owner) + '\nAdjacent land:'
+		for land in self.adjacent_land:
+			return_string += ',\t' + str(land)
+		return_string += '\nAdjacent water:'
+		for water in self.adjacent_water:
+			return_string += ',\t' + str(water)
+		return_string += '\nSupply center: ' + str(self.is_supply_center) + '\nUnits:'
+		for unit in self.units:
+			return_string += ',\t' + str(unit)
+		return return_string
 
 	def init_relationships(self):
 		super().init_relationships()

@@ -4,25 +4,15 @@ class Nation(DiplomatLoadable):
 	load_from_query_identifier = 'n'
 
 	def __init__(self, board, identifier, names, productive_territory_identifiers):
-		super().__init__(board, identifier)
+		super().__init__(board, identifier, names)
 
 		self.board.nations.append(self)
 
-		if not isinstance(names, list):
-			raise TypeError('names must be a list.')
-		for name in names:
-			if not isinstance(name, str):
-				raise TypeError('names must contain only strings.')
-		if len(names) < 1:
-			raise IndexError('names must contain at least one string.')
 		if not isinstance(productive_territory_identifiers, list):
 			raise TypeError('productive_territory_identifiers must be a list.')
 		for identifier in productive_territory_identifiers:
 			if not isinstance(identifier, str):
 				raise TypeError('productive_territory_identifiers must contain only strings.')
-
-		self.names = names
-		self.name = self.names[0]
 
 		self.productive_territory_identifiers = productive_territory_identifiers
 		self.productive_territories = []
@@ -30,8 +20,17 @@ class Nation(DiplomatLoadable):
 
 		self.units = []
 
-	def __str__(self):
-		return self.name
+	def view_string(self):
+		return_string = str(self) + ': ' + str(self.names) + '\nProductive territories:'
+		for productive_territory in self.productive_territories:
+			return_string += ',\t' + str(productive_territory)
+		return_string += '\nTerritories:'
+		for territory in self.territories:
+			return_string += ',\t' + str(territory)
+		return_string += '\nUnits:'
+		for unit in self.units:
+			return_string += ',\t' + str(unit)
+		return return_string
 
 	def init_relationships(self):
 		super().init_relationships()
