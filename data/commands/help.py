@@ -5,9 +5,9 @@ name = 'help'
 usage = 'HELP [Command]'
 description = 'Displays information about commands.'
 def execute(query):
-	if len(query) > 1:
-		if query[1] in __main__.commands:
-			command = __main__.commands[query[1]]
+	if len(query) > 0:
+		if query[0] in __main__.commands:
+			command = __main__.commands[query[0]]
 			return command.usage + '\t\t' + command.description
 
 	output = 'List of Commands\nKey: LITERAL [Optional] (Required)'

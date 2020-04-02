@@ -1,38 +1,58 @@
 import importlib.util
 from pathlib import Path
 from glob import glob
+import inspect
 
 # Global values.
 diplomat_path = str(Path(__file__).parent.absolute())
-maps_path = diplomat_path + '\\maps\\*.diplomap'
-commands_path = diplomat_path + '\\commands\\*.py'
+classes_path = diplomat_path + '\\data\\classes\\*.py'
+maps_path = diplomat_path + '\\data\\maps\\*.diplomap'
+commands_path = diplomat_path + '\\data\\commands\\*.py'
 help_string = 'Type \'help\' for a list of commands.'
+active_board = None
 
 # Load commands.
 command_files = glob(commands_path)
 commands = {}
-for command in command_files:
-	spec = importlib.util.spec_from_file_location('', command)
-	command = importlib.util.module_from_spec(spec)
-	spec.loader.exec_module(command)
-	commands[command.name] = command
+for command_file in command_files:
+	spec = importlib.util.spec_from_file_location('', command_file)
+	command_file = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(command_file)
+	commands[command_file.name] = command_file
+
+# Load classes.
+class_files = glob(classes_path)
+loadable_classes = {}
+for class_file in class_files:
+	spec = importlib.util.spec_from_file_location('', class_file)
+	class_file = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(class_file)
+	print('1 ', class_file)
+	for name, loadable_class in inspect.getmembers(class_file):
+		if inspect.isclass(loadable_class):
+			loadable_classes[name] = loadable_class
 
 # Print the help string once at the beginning.
 print(help_string)
 
 # Take commands from user.
 query = [None]
-while query[0] != 'exit':
+command_name = None
+while command_name != 'exit':
 	query = list(map(lambda word: ''.join(list([character for character in word if character.isalpha() or character.isdigit()])).lower(), input('\n>').split()))
 
 	if len(query) == 0:
-		query = [None] # So that the loop doesn't throw an error if the query was empty.
+		query = [''] # So that the loop doesn't throw an error if the query was empty.
 
+	command_name = query.pop(0)
 	command = None
-	if query[0] in commands:
-		command = commands[query[0]]
+	if command_name in commands:
+		command = commands[command_name]
 
 	if command == None:
 		print(help_string)
 	else:
-		print(command.execute(query))
+		try:
+			print(command.execute(query))
+		except:
+			print('Error executing command.')
