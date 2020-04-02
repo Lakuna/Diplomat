@@ -1,8 +1,8 @@
 from data.classes.diplomat_loadable import DiplomatLoadable
 from data.classes.nation import Nation
 
-class Place(DiplomatLoadable):
-	def __init__(self, board, identifier, names, owner_identifier, adjacent_territory_identifiers):
+class Territory(DiplomatLoadable):
+	def __init__(self, board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center):
 		super().__init__(board, identifier)
 
 		self.board.places.append(self)
@@ -23,6 +23,8 @@ class Place(DiplomatLoadable):
 				raise TypeError('adjacent_territory_identifiers must contain only strings.')
 		if len(adjacent_territory_identifiers) < 1:
 			raise IndexError('adjacent_territory_identifiers must contain at least one string.')
+		if not isinstance(is_supply_center, bool):
+			raise TypeError('is_supply_center must be a boolean.')
 
 		self.names = names
 		self.name = self.names[0]
@@ -35,6 +37,10 @@ class Place(DiplomatLoadable):
 		self.adjacent_land = []
 		self.adjacent_water = []
 
+		self.is_supply_center = is_supply_center
+
+		self.units = []
+
 	def __str__(self):
 		return self.name
 
@@ -43,10 +49,13 @@ class Place(DiplomatLoadable):
 			raise TypeError('owner must be a Nation.')
 
 		if self.owner != None:
-			self.owner.places.remove(self)
+			self.owner.territories.remove(self)
 		self.owner = owner
+		self.owner.territories.append(self)
 
 	def init_relationships(self):
+		super().init_relationships()
+		
 		for identifier in self.adjacent_territory_identifiers:
 			if not identifier in self.board.loadables:
 				raise IndexError('self.board.loadables does not contain identifier [' + identifier + '].')
@@ -65,175 +74,12 @@ class Place(DiplomatLoadable):
 			raise TypeError('owner must be a Nation.')
 		self.set_owner(owner)
 
-class Territory(Place):
-	pass
-
 class WaterTerritory(Territory):
 	load_from_query_identifier = 'w'
 
 	@staticmethod
 	def load_from_query(board, identifier, query):
-		super().load_from_query(board, identifier, query)
-		
-		# Get names.
-		if len(query) < 7:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		if query[0] != '[':
-			raise SyntaxError('Expected an opening bracket.')
-		query.pop(0)
-		names = []
-		current = query.pop(0)
-		while current != ']' and len(query) > 0:
-			names.append(current)
-			current = query.pop(0)
-		if current != ']':
-			raise SyntaxError('Expected a closing bracket.')
-
-		# Get owner_identifier.
-		if len(query) < 4:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		owner_identifier = query.pop(0)
-
-		# Get adjacent_territory_identifiers.
-		if len(query) < 3:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		if query[0] != '[':
-			raise SyntaxError('Expected an opening bracket.')
-		query.pop(0)
-		adjacent_territory_identifiers = []
-		current = query.pop(0)
-		while current != ']' and len(query) > 0:
-			adjacent_territory_identifiers.append(current)
-			current = query.pop(0)
-		if current != ']':
-			raise SyntaxError('Expected a closing bracket.')
-
-		return WaterTerritory(board, identifier, names, owner_identifier, adjacent_territory_identifiers)
-
-class LandTerritory(Territory):
-	load_from_query_identifier = 'l'
-
-	def __init__(self, board, identifier, names, owner_identifier, adjacent_territory_identifiers):
-		super().__init__(board, identifier, names, owner_identifier, adjacent_territory_identifiers)
-
-		self.coasts = []
-
-	def set_owner(self, owner):
-		if self.owner != None:
-			for coast in self.coasts:
-				self.owner.places.remove(coast)
-
-		super().set_owner(owner)
-
-		for coast in self.coasts:
-			self.owner.places.append(coast)
-
-	@staticmethod
-	def load_from_query(board, identifier, query):
-		super().load_from_query(board, identifier, query)
-		
-		# Get names.
-		if len(query) < 7:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		if query[0] != '[':
-			raise SyntaxError('Expected an opening bracket.')
-		query.pop(0)
-		names = []
-		current = query.pop(0)
-		while current != ']' and len(query) > 0:
-			names.append(current)
-			current = query.pop(0)
-		if current != ']':
-			raise SyntaxError('Expected a closing bracket.')
-
-		# Get owner_identifier.
-		if len(query) < 4:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		owner_identifier = query.pop(0)
-
-		# Get adjacent_territory_identifiers.
-		if len(query) < 3:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		if query[0] != '[':
-			raise SyntaxError('Expected an opening bracket.')
-		query.pop(0)
-		adjacent_territory_identifiers = []
-		current = query.pop(0)
-		while current != ']' and len(query) > 0:
-			adjacent_territory_identifiers.append(current)
-			current = query.pop(0)
-		if current != ']':
-			raise SyntaxError('Expected a closing bracket.')
-
-		return LandTerritory(board, identifier, names, owner_identifier, adjacent_territory_identifiers)
-
-class HybridTerritory(LandTerritory):
-	load_from_query_identifier = 'h'
-
-	@staticmethod
-	def load_from_query(board, identifier, query):
-		super().load_from_query(board, identifier, query)
-		
-		# Get names.
-		if len(query) < 7:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		if query[0] != '[':
-			raise SyntaxError('Expected an opening bracket.')
-		query.pop(0)
-		names = []
-		current = query.pop(0)
-		while current != ']' and len(query) > 0:
-			names.append(current)
-			current = query.pop(0)
-		if current != ']':
-			raise SyntaxError('Expected a closing bracket.')
-
-		# Get owner_identifier.
-		if len(query) < 4:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		owner_identifier = query.pop(0)
-
-		# Get adjacent_territory_identifiers.
-		if len(query) < 3:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		if query[0] != '[':
-			raise SyntaxError('Expected an opening bracket.')
-		query.pop(0)
-		adjacent_territory_identifiers = []
-		current = query.pop(0)
-		while current != ']' and len(query) > 0:
-			adjacent_territory_identifiers.append(current)
-			current = query.pop(0)
-		if current != ']':
-			raise SyntaxError('Expected a closing bracket.')
-
-		return HybridTerritory(board, identifier, names, owner_identifier, adjacent_territory_identifiers)
-
-class Coast(Place):
-	load_from_query_identifier = 'c'
-
-	def __init__(self, board, identifier, names, owner_identifier, territory_identifier, adjacent_territory_identifiers):
-		super().__init__(board, identifier, names, owner_identifier, adjacent_territory_identifiers)
-
-		if not isinstance(territory_identifier, str):
-			raise TypeError('territory_identifier must be a string.')
-
-		self.territory_identifier = territory_identifier
-		self.territory = None
-
-	def set_owner(self, owner):
-		self.territory.set_owner(owner)
-
-	def init_relationships(self):
-		if not self.territory_identifier in self.board.loadables:
-			raise IndexError('self.board.loadables does not contain self.territory_identifier [' + self.territory_identifier + '].')
-
-		self.territory = self.board.loadables[self.territory_identifier]
-		self.territory.coasts.append(self)
-
-	@staticmethod
-	def load_from_query(board, identifier, query):
-		super().load_from_query(board, identifier, query)
+		DiplomatLoadable.load_from_query(board, identifier, query)
 		
 		# Get names.
 		if len(query) < 8:
@@ -254,13 +100,8 @@ class Coast(Place):
 			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
 		owner_identifier = query.pop(0)
 
-		# Get territory_identifier.
-		if len(query) < 4:
-			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
-		territory_identifier = query.pop(0)
-
 		# Get adjacent_territory_identifiers.
-		if len(query) < 3:
+		if len(query) < 4:
 			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
 		if query[0] != '[':
 			raise SyntaxError('Expected an opening bracket.')
@@ -273,4 +114,120 @@ class Coast(Place):
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
 
-		return Coast(board, identifier, names, owner_identifier, territory_identifier, adjacent_territory_identifiers)
+		# Get is_supply_center.
+		if len(query) < 1:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		is_supply_center = query.pop(0)
+		if is_supply_center.startswith('t'):
+			is_supply_center = True
+		else:
+			is_supply_center = False
+
+		return WaterTerritory(board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center)
+
+class LandTerritory(Territory):
+	load_from_query_identifier = 'l'
+
+	def __init__(self, board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center):
+		super().__init__(board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center)
+
+		self.coasts = []
+
+	@staticmethod
+	def load_from_query(board, identifier, query):
+		DiplomatLoadable.load_from_query(board, identifier, query)
+		
+		# Get names.
+		if len(query) < 8:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		if query[0] != '[':
+			raise SyntaxError('Expected an opening bracket.')
+		query.pop(0)
+		names = []
+		current = query.pop(0)
+		while current != ']' and len(query) > 0:
+			names.append(current)
+			current = query.pop(0)
+		if current != ']':
+			raise SyntaxError('Expected a closing bracket.')
+
+		# Get owner_identifier.
+		if len(query) < 5:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		owner_identifier = query.pop(0)
+
+		# Get adjacent_territory_identifiers.
+		if len(query) < 4:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		if query[0] != '[':
+			raise SyntaxError('Expected an opening bracket.')
+		query.pop(0)
+		adjacent_territory_identifiers = []
+		current = query.pop(0)
+		while current != ']' and len(query) > 0:
+			adjacent_territory_identifiers.append(current)
+			current = query.pop(0)
+		if current != ']':
+			raise SyntaxError('Expected a closing bracket.')
+
+		# Get is_supply_center.
+		if len(query) < 1:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		is_supply_center = query.pop(0)
+		if is_supply_center.startswith('t'):
+			is_supply_center = True
+		else:
+			is_supply_center = False
+
+		return LandTerritory(board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center)
+
+class HybridTerritory(LandTerritory):
+	load_from_query_identifier = 'h'
+
+	@staticmethod
+	def load_from_query(board, identifier, query):
+		DiplomatLoadable.load_from_query(board, identifier, query)
+		
+		# Get names.
+		if len(query) < 8:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		if query[0] != '[':
+			raise SyntaxError('Expected an opening bracket.')
+		query.pop(0)
+		names = []
+		current = query.pop(0)
+		while current != ']' and len(query) > 0:
+			names.append(current)
+			current = query.pop(0)
+		if current != ']':
+			raise SyntaxError('Expected a closing bracket.')
+
+		# Get owner_identifier.
+		if len(query) < 5:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		owner_identifier = query.pop(0)
+
+		# Get adjacent_territory_identifiers.
+		if len(query) < 4:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		if query[0] != '[':
+			raise SyntaxError('Expected an opening bracket.')
+		query.pop(0)
+		adjacent_territory_identifiers = []
+		current = query.pop(0)
+		while current != ']' and len(query) > 0:
+			adjacent_territory_identifiers.append(current)
+			current = query.pop(0)
+		if current != ']':
+			raise SyntaxError('Expected a closing bracket.')
+
+		# Get is_supply_center.
+		if len(query) < 1:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		is_supply_center = query.pop(0)
+		if is_supply_center.startswith('t'):
+			is_supply_center = True
+		else:
+			is_supply_center = False
+
+		return HybridTerritory(board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center)

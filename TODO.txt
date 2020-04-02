@@ -1,11 +1,7 @@
-set productive centers for nations
-set territory as supply center
 other commands
 allow VIEW to work by map loadables id
-error on duplicate map loadables id
-support for empty lines and comments in loadables.
 viewable parent class for VIEW command with view_string or something
-coast name
 map seasons
 finish NEW command (non-map parts)
 import other commands.
+turn logic
