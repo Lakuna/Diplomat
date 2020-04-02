@@ -38,6 +38,13 @@ def execute(query):
 				except Exception as error:
 					return 'Error creating new map on line [' + identifier + ']: ', error
 
+		for loadable in __main__.active_board.loadables:
+			try:
+				__main__.active_board.loadables[loadable].init_relationships()
+			except Exception as error:
+				return 'Error initializing relationships on line [' + loadable + ']: ' error
+
+
 		return 'Created new map with ' + str(len(__main__.active_board.loadables)) + ' components.'
 	elif new_type == 'territory':
 		pass
