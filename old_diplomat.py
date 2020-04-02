@@ -5,12 +5,6 @@ from os import system, name
 class Map():
 	def __init__(self):
 		self.territories = {
-			'ankara': Territory('Ankara', ['ank'], True, False, True, ['con', 'bla', 'arm', 'smy']),
-			'belgium': Territory('Belgium', ['bel'], True, False, True, ['eng', 'pic', 'nth', 'hol', 'ruh', 'bur']),
-			'berlin': Territory('Berlin', ['ber'], True, False, True, ['kie', 'bal', 'pru', 'mun', 'sil']),
-			'brest': Territory('Brest', ['bre'], True, False, True, ['eng', 'mao', 'gas', 'par', 'pic']),
-			'budapest': Territory('Budapest', ['bud'], True, False, True, ['tri', 'vie', 'gal', 'rum', 'ser']),
-			'bulgaria': Territory('Bulgaria', ['bul'], True, False, True, ['ser', 'rum', 'bla', 'con', 'aeg', 'gre']),
 			'constantinople': Territory('Constantinople', ['con'], True, True, True, ['bul', 'bla', 'ank', 'smy', 'aeg']),
 			'denmark': Territory('Denmark', ['den'], True, True, True, ['hel', 'nth', 'ska', 'bal', 'kie', 'swe']),
 			'edinburgh': Territory('Edinburgh', ['edi'], True, False, True, ['cly', 'nwg', 'nth', 'yor', 'lvp']),
@@ -58,8 +52,6 @@ class Map():
 			'finland': Territory('Finland', ['fin'], True, False, False, ['swe', 'nor', 'stp', 'bot']),
 			'livonia': Territory('Livonia', ['lvn', 'livo', 'lvo', 'lva'], True, False, False, ['bot', 'stp', 'mos', 'war', 'pru', 'bal']),
 			'ukraine': Territory('Ukraine', ['ukr'], True, False, False, ['war', 'mos', 'sev', 'rum', 'gal']),
-			'albania': Territory('Albania', ['alb'], True, False, False, ['adr', 'tri', 'ser', 'gre', 'ion']),
-			'armenia': Territory('Armenia', ['arm'], True, False, False, ['ank', 'bla', 'syr', 'smy', 'sev']),
 			'syria': Territory('Syria', ['syr'], True, False, False, ['eas', 'smy', 'arm']),
 			'northatlanticocean': Territory('North Atlantic Ocean', ['nao', 'northatlantic'], False, True, False, ['cly', 'lvp', 'iri', 'mao', 'nwg']),
 			'midatlanticocean': Territory('Mid-Atlantic Ocean', ['mao', 'midatlantic', 'mid', 'mat'], False, True, False, ['nao', 'iri', 'eng', 'bre', 'gas', 'spa', 'por', 'naf', 'wes']),
@@ -76,8 +68,6 @@ class Map():
 			'gulfoflyon': Territory('Gulf of Lyon', ['lyo', 'gol', 'gulfofl', 'lyon'], False, True, False, ['spa', 'mar', 'pie', 'tus', 'tys', 'wes']),
 			'tyrrheniansea': Territory('Tyrrhenian Sea', ['tys', 'tyrr', 'tyrrhenian', 'tyn', 'tyh'], False, True, False, ['lyo', 'tus', 'rom', 'nap', 'ion', 'tun', 'wes']),
 			'ioniansea': Territory('Ionian Sea', ['ion', 'ionian'], False, True, False, ['tun', 'tys', 'nap', 'apu', 'adr', 'alb', 'gre', 'aeg', 'eas']),
-			'adriaticsea': Territory('Adriatic Sea', ['adr', 'adriatic'], False, True, False, ['ven', 'tri', 'alb', 'ion', 'apu']),
-			'aegeansea': Territory('Aegean Sea', ['aeg', 'aegean'], False, True, False, ['ion', 'gre', 'bul', 'con', 'smy', 'eas']),
 			'easternmediterranean': Territory('Eastern Mediterranean', ['eas', 'emed', 'east', 'eastern', 'eastmed', 'ems', 'eme', 'eastmediterranean'], False, True, False, ['ion', 'aeg', 'smy', 'syr']),
 			'blacksea': Territory('Black Sea', ['bla', 'black'], False, True, False, ['bul', 'rum', 'sev', 'arm', 'ank', 'con']),
 		}

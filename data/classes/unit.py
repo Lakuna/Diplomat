@@ -3,8 +3,10 @@ from data.classes.nation import Nation
 from data.classes.place import WaterTerritory, LandTerritory, HybridTerritory, Coast
 
 class Unit(DiplomatLoadable):
-	def __init__(self, owner_identifier, location_identifier, board):
-		super().__init__(board)
+	def __init__(self, board, identifier, owner_identifier, location_identifier):
+		super().__init__(board, identifier)
+
+		self.board.units.append(self)
 
 		if not isinstance(owner_identifier, str):
 			raise TypeError('owner_identifier must be a string.')
@@ -23,11 +25,11 @@ class Unit(DiplomatLoadable):
 		self.location = None
 		self.old_location = None
 
-		self.identifier = None
-		self.old_identifier = None
+		self.name = None
+		self.old_name = None
 
 	def __str__(self):
-		return self.identifier
+		return self.name
 
 	def move_to(self, location):
 		raise NotImplementedError('move_to is not implemented.')
@@ -35,7 +37,7 @@ class Unit(DiplomatLoadable):
 	def movable_territories(self):
 		raise NotImplementedError('movable_territories is not implemented.')
 
-	def switch_owner(self, owner):
+	def set_owner(self, owner):
 		if not isinstance(owner, Nation):
 			raise TypeError('owner must be a Nation.')
 
@@ -49,7 +51,7 @@ class Unit(DiplomatLoadable):
 		owner = self.board.loadables[self.owner_identifier]
 		if not isinstance(owner, Nation):
 			raise TypeError('owner must be a Nation.')
-		self.switch_owner(owner)
+		self.set_owner(owner)
 
 		if not self.location_identifier in self.board.loadables:
 			raise IndexError('self.board.loadables does not contain self.location_identifier [' + self.location_identifier + '].')
@@ -57,8 +59,8 @@ class Unit(DiplomatLoadable):
 class Army(Unit):
 	load_from_query_identifier = 'a'
 
-	def __init__(self, owner_identifier, location_identifier, board):
-		super().__init__(owner_identifier, location_identifier, board)
+	def __init__(self, board, identifier, owner_identifier, location_identifier):
+		super().__init__(board, identifier, owner_identifier, location_identifier)
 
 		self.convoys = []
 
@@ -68,10 +70,10 @@ class Army(Unit):
 
 		if self.location != None:
 			self.old_location = self.location
-		if self.identifier != None:
-			self.old_identifier = self.identifier
+		if self.name != None:
+			self.old_name = self.name
 		self.location = location
-		self.identifier = self.owner.identifier + ' a ' + self.location.identifier
+		self.name = self.owner.name + ' a ' + self.location.name
 
 	def movable_territories(self):
 		adjacent_land = self.location.adjacent_land
@@ -86,9 +88,21 @@ class Army(Unit):
 			raise TypeError('location must be a LandTerritory.')
 		self.location = location
 
-	def load_from_query(self, query):
+	@staticmethod
+	def load_from_query(board, identifier, query):
 		super().load_from_query(query)
-		# TODO
+		
+		# Get owner_identifier.
+		if len(query) < 2:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		owner_identifier = query.pop(0)
+
+		# Get location_identifier.
+		if len(query) < 1:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		location_identifier = query.pop(0)
+
+		return Army(board, identifier, owner_identifier, location_identifier)
 
 class Fleet(Unit):
 	load_from_query_identifier = 'f'
@@ -99,10 +113,10 @@ class Fleet(Unit):
 
 		if self.location != None:
 			self.old_location = self.location
-		if self.identifier != None:
-			self.old_identifier = self.identifier
+		if self.name != None:
+			self.old_name = self.name
 		self.location = location
-		self.identifier = self.owner.identifier + ' f ' + self.location.identifier
+		self.name = self.owner.name + ' f ' + self.location.name
 
 	def movable_territories(self):
 		if isinstance(self.location, WaterTerritory) or isinstance(self.location, HybridTerritory):
@@ -121,6 +135,18 @@ class Fleet(Unit):
 			raise TypeError('location must be a WaterTerritory, HybridTerritory, or Coast.')
 		self.location = location
 
-	def load_from_query(self, query):
+	@staticmethod
+	def load_from_query(board, identifier, query):
 		super().load_from_query(query)
-		# TODO
+		
+		# Get owner_identifier.
+		if len(query) < 2:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		owner_identifier = query.pop(0)
+
+		# Get location_identifier.
+		if len(query) < 1:
+			raise IndexError('There are not enough parts in the query to hold the necessary parameters.')
+		location_identifier = query.pop(0)
+
+		return Fleet(board, identifier, owner_identifier, location_identifier)

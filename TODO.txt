@@ -1,0 +1,5 @@
+set supply centers for nations
+set territory as city
+other commands
+allow VIEW to work by map loadables id
+error on duplicate map loadables id

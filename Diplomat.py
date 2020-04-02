@@ -22,15 +22,21 @@ for command_file in command_files:
 
 # Load classes.
 class_files = glob(classes_path)
+classes = {}
 loadable_classes = {}
 for class_file in class_files:
 	spec = importlib.util.spec_from_file_location('', class_file)
 	class_file = importlib.util.module_from_spec(spec)
 	spec.loader.exec_module(class_file)
-	print('1 ', class_file)
-	for name, loadable_class in inspect.getmembers(class_file):
-		if inspect.isclass(loadable_class):
-			loadable_classes[name] = loadable_class
+	for name, class_object in inspect.getmembers(class_file):
+		if not inspect.isclass(class_object):
+			continue
+		classes[name] = class_object
+		if not hasattr(class_object, 'load_from_query_identifier'):
+			continue
+		if not isinstance(class_object.load_from_query_identifier, str):
+			continue
+		loadable_classes[class_object.load_from_query_identifier] = class_object
 
 # Print the help string once at the beginning.
 print(help_string)
@@ -39,20 +45,23 @@ print(help_string)
 query = [None]
 command_name = None
 while command_name != 'exit':
+	# Get user input.
 	query = list(map(lambda word: ''.join(list([character for character in word if character.isalpha() or character.isdigit()])).lower(), input('\n>').split()))
-
 	if len(query) == 0:
 		query = [''] # So that the loop doesn't throw an error if the query was empty.
+		continue
 
+	# Get command.
 	command_name = query.pop(0)
 	command = None
 	if command_name in commands:
 		command = commands[command_name]
-
 	if command == None:
 		print(help_string)
-	else:
-		try:
-			print(command.execute(query))
-		except:
-			print('Error executing command.')
+		continue
+
+	# Execute command.
+	try:
+		print(command.execute(query))
+	except Exception as error:
+		print('Error executing command: ', error)
