@@ -16,9 +16,6 @@ class Unit(DiplomatLoadable):
 		self.owner_identifier = owner_identifier
 		self.owner = None
 
-		self.action = None
-		self.action_target = None
-
 		self.power = 1
 
 		self.location_identifier = location_identifier
@@ -146,6 +143,22 @@ class Fleet(Unit):
 			adjacent_territories_on_coast = list(filter(lambda territory: territory in self.coast.adjacent_territories, self.location.adjacent_territories))
 			return adjacent_territories_on_coast
 		raise TypeError('self.location must be a WaterTerritory, HybridTerritory, or LandTerritory.')
+
+	def convoyable_units(self):
+		units = []
+		for unit in self.owner.units:
+			if not isinstance(unit, Army):
+				continue
+
+			if unit.location in self.location.adjacent_territories:
+				units.append(unit)
+				continue
+
+			for convoy in unit.convoys:
+				if convoy.location in self.location.adjacent_territories:
+					units.append(unit)
+					continue
+		return units
 
 	def init_relationships(self):
 		super().init_relationships()
