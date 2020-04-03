@@ -36,6 +36,12 @@ class Unit(DiplomatLoadable):
 		self.location = location
 		self.location.units.append(self)
 
+	def destroy(self):
+		self.board.loadables.pop(self.identifier, None)
+		self.board.units.remove(self)
+		self.owner.units.remove(self)
+		self.location.units.remove(self)
+
 	def movable_territories(self):
 		raise NotImplementedError('movable_territories() is not implemented.')
 
@@ -46,7 +52,7 @@ class Unit(DiplomatLoadable):
 		if self.owner != None:
 			self.owner.territories.remove(self)
 		self.owner = owner
-		self.owner.territories.append(self)
+		self.owner.units.append(self)
 
 	def view_string(self):
 		return str(self) + ': ' + str(self.names) + '\nOwner: ' + str(self.owner) + '\nLocation: ' + str(self.location)
@@ -82,7 +88,10 @@ class Army(Unit):
 
 	def movable_territories(self):
 		adjacent_land = self.location.adjacent_land
-		convoy_destinations = list(territory for territory in [convoy.location.adjacent_land for convoy in self.convoys])
+		convoy_destinations = []
+		for convoy in self.convoys:
+			for territory in convoy.location.adjacent_land:
+				convoy_destinations.append(territory)
 		return adjacent_land + convoy_destinations
 
 	def init_relationships(self):
@@ -138,7 +147,8 @@ class Fleet(Unit):
 
 	def movable_territories(self):
 		if isinstance(self.location, WaterTerritory) or isinstance(self.location, HybridTerritory):
-			return self.location.adjacent_territories
+			adjacent_territories_with_coast = list(filter(lambda territory: len(territory.adjacent_water) > 0, self.location.adjacent_territories))
+			return adjacent_territories_with_coast
 		if isinstance(self.location, LandTerritory):
 			adjacent_territories_on_coast = list(filter(lambda territory: territory in self.coast.adjacent_territories, self.location.adjacent_territories))
 			return adjacent_territories_on_coast
@@ -146,6 +156,10 @@ class Fleet(Unit):
 
 	def convoyable_units(self):
 		units = []
+
+		if isinstance(self.location, LandTerritory):
+			return units # Can't convoy while landed.
+
 		for unit in self.owner.units:
 			if not isinstance(unit, Army):
 				continue

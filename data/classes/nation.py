@@ -54,7 +54,8 @@ class Nation(DiplomatLoadable):
 		names = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			names.append(current)
+			if current != '-':
+				names.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
@@ -68,7 +69,8 @@ class Nation(DiplomatLoadable):
 		productive_territory_identifiers = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			productive_territory_identifiers.append(current)
+			if current != '-':
+				productive_territory_identifiers.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')

@@ -64,4 +64,4 @@ while command_name != 'exit':
 	try:
 		print(command.execute(query))
 	except Exception as error:
-		print('Error executing command: ', error)
+		print('Error executing command: ' + str(error))

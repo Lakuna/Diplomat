@@ -5,7 +5,7 @@ class Territory(DiplomatLoadable):
 	def __init__(self, board, identifier, names, owner_identifier, adjacent_territory_identifiers, is_supply_center):
 		super().__init__(board, identifier, names)
 
-		self.board.places.append(self)
+		self.board.territories.append(self)
 
 		if not isinstance(owner_identifier, str):
 			raise TypeError('owner_identifier must be a string.')
@@ -14,8 +14,6 @@ class Territory(DiplomatLoadable):
 		for identifier in adjacent_territory_identifiers:
 			if not isinstance(identifier, str):
 				raise TypeError('adjacent_territory_identifiers must contain only strings.')
-		if len(adjacent_territory_identifiers) < 1:
-			raise IndexError('adjacent_territory_identifiers must contain at least one string.')
 		if not isinstance(is_supply_center, bool):
 			raise TypeError('is_supply_center must be a boolean.')
 
@@ -66,6 +64,8 @@ class Territory(DiplomatLoadable):
 		self.adjacent_land = list(filter(lambda territory: isinstance(territory, LandTerritory) or isinstance(territory, HybridTerritory), self.adjacent_territories))
 		self.adjacent_water = list(filter(lambda territory: isinstance(territory, WaterTerritory) or isinstance(territory, HybridTerritory), self.adjacent_territories))
 
+		if self.owner_identifier == '-':
+			return
 		if not self.owner_identifier in self.board.loadables:
 			raise IndexError('self.board.loadables does not contain self.owner_identifier [' + self.owner_identifier + '].')
 		owner = self.board.loadables[self.owner_identifier]
@@ -89,7 +89,8 @@ class WaterTerritory(Territory):
 		names = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			names.append(current)
+			if current != '-':
+				names.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
@@ -108,7 +109,8 @@ class WaterTerritory(Territory):
 		adjacent_territory_identifiers = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			adjacent_territory_identifiers.append(current)
+			if current != '-':
+				adjacent_territory_identifiers.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
@@ -145,7 +147,8 @@ class LandTerritory(Territory):
 		names = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			names.append(current)
+			if current != '-':
+				names.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
@@ -164,7 +167,8 @@ class LandTerritory(Territory):
 		adjacent_territory_identifiers = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			adjacent_territory_identifiers.append(current)
+			if current != '-':
+				adjacent_territory_identifiers.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
@@ -196,7 +200,8 @@ class HybridTerritory(LandTerritory):
 		names = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			names.append(current)
+			if current != '-':
+				names.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')
@@ -215,7 +220,8 @@ class HybridTerritory(LandTerritory):
 		adjacent_territory_identifiers = []
 		current = query.pop(0)
 		while current != ']' and len(query) > 0:
-			adjacent_territory_identifiers.append(current)
+			if current != '-':
+				adjacent_territory_identifiers.append(current)
 			current = query.pop(0)
 		if current != ']':
 			raise SyntaxError('Expected a closing bracket.')

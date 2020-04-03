@@ -8,17 +8,17 @@ class Board(DiplomatViewable):
 
 		self.loadables = {}
 		self.nations = []
-		self.places = []
+		self.territories = []
 		self.units = []
-		self.turn_number = 1
+		self.turn_number = 0
 
 	def view_string(self):
 		return_string = str(self) + ':\nLoadables: ' + str(len(self.loadables)) + '\nNations:'
 		for nation in self.nations:
 			return_string += ',\t' + str(nation)
-		return_string += '\nPlaces:'
-		for place in self.places:
-			return_string += ',\t' + str(place)
+		return_string += '\nTerritories:'
+		for territory in self.territories:
+			return_string += ',\t' + str(territory)
 		return_string += '\nUnits:'
 		for unit in self.units:
 			return_string += ',\t' + str(unit)
