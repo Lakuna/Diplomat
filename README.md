@@ -1,5 +1,6 @@
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/T3rrabyte/Diplomat)
-![GitHub repo size](https://img.shields.io/github/repo-size/T3rrabyte/Diplomat)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/T3rrabyte/Diplomat)
+
+![GitHub All Releases](https://img.shields.io/github/downloads/T3rrabyte/Diplomat/total)
 
 # Diplomat
 Assistant tool for the Diplomacy board game. Please read the wiki for information on advanced usage. Basic usage is included within the program's help command.
