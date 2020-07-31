@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 from glob import glob
 import inspect
+import os.path
 
 # Global values.
 diplomat_path = str(Path(__file__).parent.absolute())
@@ -10,6 +11,13 @@ maps_path = diplomat_path + '\\data\\maps\\*.diplomap'
 commands_path = diplomat_path + '\\data\\commands\\*.py'
 help_string = 'Type \'help\' for a list of commands.'
 active_board = None
+
+# Create paths if they don't exist.
+for path in (diplomat_path, classes_path, maps_path, commands_path):
+	dirname = os.path.dirname(path)
+	if not os.path.exists(dirname):
+		os.makedirs(dirname)
+		print('Created directory: ' + dirname)
 
 # Load commands.
 command_files = glob(commands_path)
