@@ -1,0 +1,40 @@
+										Modding
+Diplomat was built from the ground-up to be easily moddable. Mods can contain any combination of two types of parts: classes and commands.
+- Classes are used to define game pieces for use in creating maps.
+- Commands are extra functions given to the user to utilize.
+
+All classes and commands must be written in python.
+
+										Classes
+
+Class files must be put within the "data/classes" directory.
+
+In order to be visible to the user (i.e. through the VIEW command), the class must extend DiplomatViewable.
+- Must contain a constructor with a call to "super().__init__(names)," where names is a list of strings which the user can use to refer to the object.
+- Must implement a "view_string()" method, which is what the player will see when using the VIEW commmand on the object.
+
+In order to use an object in a map, it must also extend DiplomatLoadable.
+DiplomatLoadable extends DiplomatViewable, so the above points also apply to DiplomatLoadable.
+- Must contain a static field called "load_from_query_identifier," which is the "load query identifier" described in the mapmaking guide.
+- Must contain a constructor with a call to "super().__init__(board, identifier, names)," where names is a list of strings which the user can use to refer to the object,
+board is the game board which the object is a part of, and identifier is the unique identifier of the object.
+- Must contain an "init_relationships()" method which is always called when the map loads, after all objects have been loaded. This is where relationships between objects are resolved.
+- Must contain a static method called "load_from_query(board, identifier, query)," where board is the game board which will contain the object, identifier is the unique identifier of
+the object, and query is the string used to construct the object in the map file (NOT including the load query identifier and unique identifier). This method must return an instance of
+this class.
+
+										Commands
+Command files must be put within the "data/commands" directory.
+
+The command file must declare the following fields:
+- "name" is the name of the command.
+- "usage" is the syntax string for the command.
+- "description" is the brief description of the command displayed by the help menu.
+
+The command file must also contain a method called "execute" which takes one parameter, which will contain the query string passed by the user (NOT including the command name).
+- The query string will always be all-lowercase and space-separated.
+
+Other parts of the game can easily be accessed with the line "import __main__":
+- __main__.active_board is the game board which is currently in-use.
+- __main__.classes is a dictionary of classes loaded by Diplomat, with the class name as the key. For example, to create an Army unit: "__main.classes['Army']()."
+- __main__.loadable_classes is a dictionary of classes which extend DiplomatLoadable, with the load query identifier as the key.

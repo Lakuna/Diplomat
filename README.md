@@ -3,7 +3,7 @@
 ![GitHub All Releases](https://img.shields.io/github/downloads/T3rrabyte/Diplomat/total)
 
 # Diplomat
-Assistant tool for the Diplomacy board game. Please read the wiki for information on advanced usage. Basic usage is included within the program's help command.
+Assistant tool for the Diplomacy board game. Please read the contents of the "guide" folder for information on advanced usage. Basic usage is included within the program's help command.
 
 # License Information
 Assistant tool for the Diplomacy board game. Copyright (C) 2020 Travis Martin

@@ -10,7 +10,9 @@ def execute(query):
 			command = __main__.commands[query[0]]
 			return command.usage + '\t\t' + command.description
 
-	output = 'List of Commands\nKey: LITERAL [Optional] (Required)'
+	output = [['Syntax', 'Description']]
 	for command in __main__.commands.values():
-		output += '\n' + command.usage + '\t\t' + command.description
-	return output
+		output.append([command.usage, command.description])
+	__main__.print_columns(output)
+
+	return '\nKey: LITERAL [Optional] (Required)'

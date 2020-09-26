@@ -4,6 +4,12 @@ from glob import glob
 import inspect
 import os.path
 
+# Column printing function.
+def print_columns(data):
+	column_width = max(len(word) for row in data for word in row) + 2 # padding
+	for row in data:
+		print(''.join(word.ljust(column_width) for word in row))
+
 # Global values.
 diplomat_path = str(Path(__file__).parent.absolute())
 classes_path = diplomat_path + '\\data\\classes\\*.py'

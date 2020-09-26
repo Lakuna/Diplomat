@@ -1,0 +1,58 @@
+									Mapmaking
+Creating a map for Diplomat is as simple as creating a text file in the "data/maps" directory and changing the file type to ".diplomap."
+The map which the program loads will change depending on the contents of the map file.
+
+Maps MUST contain only lowercase characters.
+Although the map will load perfectly fine with uppercase characters, the user will not be able to interact with components with uppercase identifiers.
+
+Map files are loaded line-by-line. Lines use a special syntax to tell the program how to load the object they represent, which depends on the type of object.
+
+The program reads map files according to a few special rules:
+- Lines that begin with a pound ("#") or are empty will be completely ignored. This is for adding comments and sectioning the map to be more readable by humans.
+- Each part of a line must be separated by a single space.
+- Lists are surrounded by square brackets ("[]"). Square brackets still must be surrounded by spaces (i.e. "1 2 3 [ 4 5 6 7 8 ] 9 10").
+- Empty or ignored values must be filled with a hyphen ("-"). Empty lists still must have square brackets surrounding them (i.e. "1 2 - 4 [ - ] 6 - 8").
+- Boolean values must be written exactly as either "t" (for true) or "f" (for false).
+
+Specific parts of a line:
+- The first element in each line must be a unique identifier for that object.
+- The second element in each line is the "load query identifier." This defines the type of object being loaded by the line.
+
+After the load query identifier, the contents of the line change based on the type of object being loaded.
+Many object types are included with Diplomat - the syntax for those are listed below. Object types from mods should be described somewhere within the mod.
+
+								Default load query identifiers:
+
+n [ names ] [ productive_territories ]
+Creates a nation.
+The nation can be referred to by any string within "names" (such as with the VIEW command).
+"productive_territories" is a list of unique identifiers for the territories on the map which the nation can use to produce units.
+Example: "1 n [ i italy ] [ 52 59 77 ]" creates Italy in europe.diplomap.
+- 1 is the unique identifier of Italy.
+- "n" denotes a nation.
+- "i" and "italy" are values which can be used to refer to Italy using commands.
+- 52 (Naples), 59 (Rome), and 77 (Venice) are the three territories which Italy can use to produce units.
+
+w|l|h [ names ] owner_identifier [ adjacent_territory_identifiers ] is_supply_center
+Creates a territory. "w" creates a water territory, "l" creates a land territory, and "h" creates a hybrid territory.
+The territory can be referred to by any string within "names" (such as with the VIEW command).
+"owner_identifier" contains the unique identifier of the nation that owns this territory. Can be replaced with a hyphen for unowned territory.
+"adjacent_territory_identifiers" is a list of territories which touch this one, and can be moved to directly from this one.
+"is_supply_center" is a boolean value which determines whether or not the territory increases the maximum number of units for its owner.
+Example: "8 w [ adr adriatic adriaticsea ] - [ 10 13 38 73 77 ] f
+- 8 is the unique identifier of the Adriatic Sea.
+- "w" denotes a water territory.
+- "adr," "adriatic," and "adriaticsea" are the three ways which the player can refer to the Adriatic Sea in commands.
+- The hyphen denotes that no nation owns the territory.
+- 10 (Albania), 13 (Apulia), 38 (Ionian Sea), 73 (Trieste), and 77 (Venice) are the five territories which directly touch the Adriatic Sea.
+- The "f" (for "false") denotes that the territory is not a supply center, meaning that it does not increase the maximum military size of its owner.
+
+a|f owner_identifier location_identifier
+Creates a military unit. "a" creates an army (land unit) and "f" creates a fleet (water unit).
+"owner_identifier" denotes which nation owns the unit. Unlike with territories, all units must have an owner.
+"location_identifier" denotes the current location of the unit. This value must also be filled by something other than a hyphen.
+Example: "83 a 1 59"
+- 83 is the unique identifier of the unit.
+- "a" denotes an army (land unit).
+- 1 (Italy) is the owner nation.
+- 59 (Rome) is the location of the unit.

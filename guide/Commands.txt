@@ -1,0 +1,35 @@
+								How to Read the Help Menu
+The help menu contains a list of commands, followed by their syntax string, followed by a brief description of the command.
+A syntax string can have multiple components:
+- A component written in ALL CAPS must be written exactly as-is. For example, the clear command (syntax: "CLEAR") must be written as "clear" to work.
+- A component within [square brackets] is optional. Omitting the argument will use a default value or cause some sort of alternate functionality.
+- A component within (round brackets) is required. The command will not run without these arguments.
+- "|" means "or" - for example, "VIEW (MAP | identifier | name)" means that the program will take either "view map" or "view" followed by a piece name or identifier,
+but not just "view" (as the parameter is surrounded by rounded brackets).
+
+									Commands
+
+CLEAR
+Clears the entire terminal. Takes no arguments.
+
+EXIT
+Exits Diplomat. Takes no arguments.
+
+HELP [Command name]
+If used without a parameter, will print a list of commands, their syntax strings, and a brief description of each.
+If used with a parameter, will display command information for the command which matches the parameter.
+
+ITERATE [Batches] [Batch size] [Nation]
+If used without a parameter, will play 10 batches of 100 games each from the current map state.
+If the first parameter is set, will play x batches of 100 games (where x is the first parameter).
+If the second parameter is set, will play x batches of y games (where x is the first parameter and y is the second).
+If used with the third parameter, will also return extra information for the nation selected with that parameter.
+This command is the bulk of what the program was designed for.
+
+LOAD (Map name)
+Loads the map specified by the first parameter. Looks in the "data/maps" folder for "x.diplomap," where x is the first parameter.
+Load must be used before running iterate.
+
+VIEW (MAP | identifier | name)
+If the first parameter is "map," will output information about the currently loaded map.
+Otherwise, outputs information regarding the map component with either identifier or name "x," where x is the first parameter.
